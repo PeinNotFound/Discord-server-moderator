@@ -1,0 +1,20 @@
+{
+  "name": "discord-server-moderator",
+  "version": "1.0.0",
+  "description": "A comprehensive Discord moderation bot with advanced features",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js"
+  },
+  "keywords": ["discord", "bot", "moderation", "discord.js"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "discord.js": "^14.14.1",
+    "ms": "^2.1.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  }
+}

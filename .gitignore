@@ -1,0 +1,45 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# Configuration
+src/config.js
+
+# Data Files
+src/moderation-data.json
+src/ranks-data.json
+
+# Backups
+src/backups/
+*.backup
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Environment Variables
+.env
+.env.local
+
+# OS Files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Temporary Files
+*.tmp
+temp/
+tmp/
+
+# Build Files
+dist/
+build/
+
