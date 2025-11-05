@@ -429,7 +429,14 @@ async function createServerBackup(guild) {
         });
         
         // Save to file
-        const filename = `backup_${guild.name}_${timestamp}.json`;
+        // Ensure backup directory exists before writing
+        if (!fs.existsSync(BACKUP_DIR)) {
+            fs.mkdirSync(BACKUP_DIR, { recursive: true });
+        }
+        
+        // Sanitize guild name for filename (remove invalid characters for Windows)
+        const sanitizedName = guild.name.replace(/[<>:"/\\|?*]/g, '_').replace(/\s+/g, '_');
+        const filename = `backup_${sanitizedName}_${timestamp}.json`;
         const filepath = path.join(BACKUP_DIR, filename);
         
         fs.writeFileSync(filepath, JSON.stringify(backupData, null, 2));
@@ -538,8 +545,16 @@ async function restoreFromBackup(guild, filename, options = {}) {
             
             for (const catData of sortedCategories) {
                 try {
-                    const existingCat = guild.channels.cache.find(c => c.name === catData.name && c.type === 4);
+                    // First check if category with same ID still exists (same server restore)
+                    let existingCat = guild.channels.cache.get(catData.id);
+                    
+                    // If not found by ID, try to find by name and type
+                    if (!existingCat || existingCat.type !== 4) {
+                        existingCat = guild.channels.cache.find(c => c.name === catData.name && c.type === 4);
+                    }
+                    
                     if (!existingCat) {
+                        // Category doesn't exist, create it
                         const newCat = await guild.channels.create({
                             name: catData.name,
                             type: 4,
@@ -549,6 +564,7 @@ async function restoreFromBackup(guild, filename, options = {}) {
                         categoryMap.set(catData.id, newCat);
                         results.channelsCreated++;
                     } else {
+                        // Category exists, map old ID to existing category
                         categoryMap.set(catData.id, existingCat);
                     }
                 } catch (error) {
@@ -562,7 +578,31 @@ async function restoreFromBackup(guild, filename, options = {}) {
             
             for (const channelData of sortedChannels) {
                 try {
-                    const existingChannel = guild.channels.cache.find(c => c.name === channelData.name && c.type === channelData.type);
+                    // Find the parent category first (for checking existing channels)
+                    let parentCategory = null;
+                    if (channelData.parentId) {
+                        // First check if it's in our categoryMap
+                        if (categoryMap.has(channelData.parentId)) {
+                            parentCategory = categoryMap.get(channelData.parentId);
+                        } else {
+                            // Check if the category still exists in the guild (same server restore)
+                            const existingParent = guild.channels.cache.get(channelData.parentId);
+                            if (existingParent && existingParent.type === 4) {
+                                parentCategory = existingParent;
+                                // Add to map for future reference
+                                categoryMap.set(channelData.parentId, existingParent);
+                            }
+                        }
+                    }
+                    
+                    // Check if channel already exists (by name, type, and parent)
+                    const expectedParentId = parentCategory ? parentCategory.id : null;
+                    const existingChannel = guild.channels.cache.find(c => 
+                        c.name === channelData.name && 
+                        c.type === channelData.type &&
+                        c.parentId === expectedParentId
+                    );
+                    
                     if (!existingChannel) {
                         const createData = {
                             name: channelData.name,
@@ -572,8 +612,8 @@ async function restoreFromBackup(guild, filename, options = {}) {
                         };
                         
                         // Set parent category if it exists
-                        if (channelData.parentId && categoryMap.has(channelData.parentId)) {
-                            createData.parent = categoryMap.get(channelData.parentId).id;
+                        if (parentCategory) {
+                            createData.parent = parentCategory.id;
                         }
                         
                         // Text channel specific
