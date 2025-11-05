@@ -32,6 +32,15 @@ A comprehensive, feature-rich Discord moderation bot with advanced anti-raid pro
 - **Permission-based** - Prevents @everyone from typing
 - **Quick Access** - Instant channel control
 
+### ✅ Verification System
+- **Role-based Verification** - `!vb` and `!vg` commands for verified roles
+- **Automatic Unverified Assignment** - New members get unverified role
+- **Verification Rooms** - Alerts verificators when unverified members join
+- **Hourly Pings** - Automatic @unverified role pings in verification chat
+- **Comprehensive Logging** - All verification actions logged
+- **Permission Control** - Only verificators and admins can verify users
+- **Hidden Commands** - Unauthorized users see "Unknown command"
+
 ### ⭐ Staff Rank System
 - **7 Rank Tiers** - Trial Staff → Administrator
 - **Point-based Progression** - Earn points for better ranks
@@ -126,6 +135,13 @@ A comprehensive, feature-rich Discord moderation bot with advanced anti-raid pro
 | `!antiraid` | View protection status | Admin |
 | `!backup_help` | Backup system guide | Admin |
 
+### Verification
+| Command | Description | Permission |
+|---------|-------------|------------|
+| `!vb @user` | Verify user (male/neutral) | Verificator/Admin |
+| `!vg @user` | Verify user (female) | Verificator/Admin |
+| `!vhelp` | Verification help | Everyone |
+
 ### Utility
 | Command | Description | Permission |
 |---------|-------------|------------|
@@ -160,11 +176,15 @@ npm install
    # Copy example config
    cp src/config.example.js src/config.js
    
-   # Edit src/config.js with your settings
+   # Copy verification config (optional - for verification system)
+   cp src/verification-config.example.js src/verification-config.js
+   
+   # Edit both config files with your settings
    ```
 
 4. **Required Configuration:**
-   Edit `src/config.js` and fill in:
+   
+   **Main Config (`src/config.js`):**
    - `DISCORD_TOKEN` - Your bot token
    - `CLIENT_ID` - Your bot's client ID
    - `MODERATOR_ROLES` - Role IDs (comma-separated)
@@ -173,6 +193,17 @@ npm install
    - `RANK_ADMIN_ROLES` - Role IDs (comma-separated)
    - All log channel IDs
    - Role IDs (warn, jail, muted, rank tiers)
+   
+   **Verification Config (`src/verification-config.js`):**
+   - `VERIFIED_ROLE_ID` - Verified role (male/neutral)
+   - `VERIFIED_FEMALE_ROLE_ID` - Verified female role
+   - `UNVERIFIED_ROLE_ID` - Unverified role
+   - `VERIFICATOR_ROLE_ID` - Role that can verify users
+   - `VERIFICATION_CMD_CHANNEL_ID` - Channel where commands work
+   - `VERIFICATION_CHAT_CHANNEL_ID` - Channel for hourly pings
+   - `VERIFICATION_LOG_CHANNEL_ID` - Channel for logs
+   - `VERIFICATION_ROOMS` - Array of voice channel IDs
+   - `PING_UNVERIFIED_INTERVAL` - Ping interval (default: 3600000ms)
 
 5. **Create required roles:**
    - Warned
@@ -191,8 +222,15 @@ npm install
    - move-logs
    - member-leave-logs
    - rank-logs
+   - verification-logs (if using verification system)
 
-7. **Start the bot:**
+7. **Create verification roles (if using verification system):**
+   - Verified (male/neutral)
+   - Verified Female
+   - Unverified
+   - Verificator
+
+8. **Start the bot:**
 ```bash
 npm start
 ```
@@ -205,6 +243,11 @@ npm run dev
    Or on Windows:
    ```bash
    start.bat
+   ```
+
+   Or run standalone (from this folder):
+   ```bash
+   node index.js
    ```
 
 ---
@@ -236,19 +279,21 @@ Or individually:
 
 ```
 Discord-server-moderator/
+├── index.js                  # Standalone entry point (sets NODE_PATH)
 ├── src/
-│   ├── bot.js                # Main bot file (entry point)
-│   ├── config.js             # Configuration (not in git)
-│   ├── config.example.js     # Configuration template
-│   ├── ranks.js              # Rank system module
-│   ├── anti-raid.js          # Anti-raid protection module
-│   ├── moderation-data.json  # Moderation data (auto-generated)
-│   ├── ranks-data.json       # Rank data (auto-generated)
-│   └── backups/              # Server backups (auto-created)
-├── node_modules/             # Dependencies (not in git)
+│   ├── bot.js                # Main bot file
+│   ├── config.js             # Main configuration (not in git)
+│   ├── config.example.js     # Main configuration template
+│   ├── verification-config.js        # Verification config (not in git)
+│   ├── verification-config.example.js # Verification config template
+│   ├── ranks.js             # Rank system module
+│   ├── anti-raid.js         # Anti-raid protection module
+│   ├── verification.js      # Verification system module
+│   ├── moderation-data.json # Moderation data (auto-generated)
+│   ├── ranks-data.json      # Rank data (auto-generated)
+│   └── backups/             # Server backups (auto-created)
 ├── package.json              # Project metadata
 ├── start.bat                 # Windows startup script
-├── .gitignore                # Git ignore rules
 └── README.md                 # This file
 ```
 
