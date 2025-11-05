@@ -2,10 +2,10 @@
   "name": "discord-server-moderator",
   "version": "1.0.0",
   "description": "A comprehensive Discord moderation bot with advanced features",
-  "main": "src/index.js",
+  "main": "src/bot.js",
   "scripts": {
-    "start": "node src/index.js",
-    "dev": "nodemon src/index.js"
+    "start": "node src/bot.js",
+    "dev": "nodemon src/bot.js"
   },
   "keywords": ["discord", "bot", "moderation", "discord.js"],
   "author": "",

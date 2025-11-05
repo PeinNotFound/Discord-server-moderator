@@ -237,7 +237,7 @@ Or individually:
 ```
 Discord-server-moderator/
 ├── src/
-│   ├── index.js              # Main bot file
+│   ├── bot.js                # Main bot file (entry point)
 │   ├── config.js             # Configuration (not in git)
 │   ├── config.example.js     # Configuration template
 │   ├── ranks.js              # Rank system module
