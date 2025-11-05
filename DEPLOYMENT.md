@@ -118,7 +118,7 @@ git push --tags
 5. **Run with PM2 (keeps bot alive):**
    ```bash
    npm install -g pm2
-   pm2 start src/index.js --name discord-bot
+   pm2 start src/bot.js --name discord-moderator-bot
    pm2 save
    pm2 startup
    ```
@@ -162,7 +162,7 @@ git push --tags
 ```bash
 git pull origin main
 npm install  # Update dependencies if needed
-pm2 restart discord-bot  # Restart bot
+pm2 restart discord-moderator-bot  # Restart bot
 ```
 
 ---
@@ -182,7 +182,7 @@ For added security, you can use environment variables:
    npm install dotenv
    ```
 
-3. **Modify src/index.js:**
+3. **Modify src/bot.js:**
    ```javascript
    require('dotenv').config();
    // Use process.env.DISCORD_TOKEN instead of config.DISCORD_TOKEN
