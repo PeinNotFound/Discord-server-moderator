@@ -743,6 +743,10 @@ client.on('messageCreate', async (message) => {
     
     // Check if bot was mentioned (before prefix check)
     if (message.mentions.has(client.user.id) && !message.content.startsWith(botConfig.prefix)) {
+        // Ignore @everyone and @here mentions
+        if (message.mentions.everyone || message.content.includes('@here')) {
+            return;
+        }
         return await safeReply(message, '👋 Hi! Type `!help` to see all available commands!');
     }
     
