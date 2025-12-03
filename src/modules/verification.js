@@ -3,7 +3,7 @@ const { EmbedBuilder } = require('discord.js');
 // Load verification config
 let verificationConfig;
 try {
-    verificationConfig = require('./verification-config.js');
+    verificationConfig = require('../config/verification-config.js');
 } catch (error) {
     verificationConfig = null;
 }
@@ -53,7 +53,7 @@ function canUseVerificationCommand(member, config) {
     // Load config if not provided
     if (!config) {
         try {
-            config = require('./config.js');
+            config = require('../config/config.js');
         } catch {
             return false;
         }
@@ -90,7 +90,7 @@ async function verifyUser(message, target, roleType = 'verified') {
     // Load config
     let config;
     try {
-        config = require('./config.js');
+        config = require('../config/config.js');
     } catch {
         return await safeReply(message, '❌ Configuration error!');
     }
@@ -368,7 +368,7 @@ async function showVerificationHelp(message) {
     // Load config
     let config;
     try {
-        config = require('./config.js');
+        config = require('../config/config.js');
     } catch {
         return await safeReply(message, '❌ Configuration error!');
     }

@@ -1,0 +1,97 @@
+🚀 DASHBOARD SETUP GUIDE
+
+===========================================
+STEP 1: Install Dependencies
+===========================================
+
+cd dashboard
+npm install
+
+
+===========================================
+STEP 2: Get Discord Client Secret
+===========================================
+
+1. Go to: https://discord.com/developers/applications
+2. Select your bot application
+3. Go to "OAuth2" tab
+4. Copy your "CLIENT SECRET"
+5. Add Redirect URI: http://node1.masterdev.store:5001/callback
+
+
+===========================================
+STEP 3: Configure Environment
+===========================================
+
+Create .env file (copy from .env.example):
+Copy .env.example to .env
+
+Edit .env file with:
+- DISCORD_CLIENT_SECRET=your_secret_here
+- SESSION_SECRET=random_secure_string
+- CALLBACK_URL=http://node1.masterdev.store:5001/callback
+
+
+===========================================
+STEP 4: Start Dashboard
+===========================================
+
+From dashboard folder:
+npm start
+
+Or for development (auto-reload):
+npm run dev
+
+
+===========================================
+STEP 5: Access Dashboard
+===========================================
+
+Open browser:
+http://node1.masterdev.store:5001
+
+Login with Discord account that has server access.
+
+
+===========================================
+FEATURES
+===========================================
+
+✅ Real-time stats (updates every 5 seconds)
+✅ Live configuration changes (no restart needed)
+✅ Discord OAuth authentication
+✅ WebSocket for instant updates
+✅ View warned/jailed user counts
+✅ Edit bot prefix and role IDs
+
+
+===========================================
+TROUBLESHOOTING
+===========================================
+
+Q: "Cannot find module" errors?
+A: Run "npm install" in dashboard folder
+
+Q: OAuth redirect error?
+A: Check CALLBACK_URL in .env matches Discord Developer Portal
+
+Q: Can't access from other computer?
+A: Make sure server.js uses '0.0.0.0' host (already configured)
+
+Q: Stats not updating?
+A: Check bot is running and moderation-data.json exists
+
+
+===========================================
+RUNNING BOTH BOT + DASHBOARD
+===========================================
+
+Terminal 1:
+cd Discord-server-moderator
+node src/bot-new.js
+
+Terminal 2:
+cd Discord-server-moderator/dashboard
+npm start
+
+Both will run simultaneously on same server!

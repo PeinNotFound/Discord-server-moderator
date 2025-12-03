@@ -4,6 +4,9 @@
 const path = require('path');
 const fs = require('fs');
 
+// Load environment variables from .env file
+require('dotenv').config();
+
 // Set up environment to use root node_modules (or local if they exist)
 const rootNodeModules = path.join(__dirname, '..', 'node_modules');
 const localNodeModules = path.join(__dirname, 'node_modules');
@@ -40,4 +43,3 @@ process.on('SIGTERM', () => {
     console.log('\n🛑 Shutting down bot...');
     process.exit(0);
 });
-

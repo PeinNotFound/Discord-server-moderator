@@ -357,7 +357,7 @@ async function handleRaider(member, guild, reason, botConfig) {
 /**
  * Create server backup
  */
-async function createServerBackup(guild) {
+async function createServerBackup(guild, guildConfigManager = null) {
     try {
         const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
         const backupData = {
@@ -428,16 +428,25 @@ async function createServerBackup(guild) {
             });
         });
         
-        // Save to file
-        // Ensure backup directory exists before writing
-        if (!fs.existsSync(BACKUP_DIR)) {
-            fs.mkdirSync(BACKUP_DIR, { recursive: true });
+        // Determine backup directory
+        let backupDir;
+        if (guildConfigManager) {
+            // Use guild-specific backup directory
+            backupDir = guildConfigManager.getGuildBackupPath(guild.id);
+        } else {
+            // Fallback to old global backup directory
+            backupDir = BACKUP_DIR;
+        }
+        
+        // Ensure backup directory exists
+        if (!fs.existsSync(backupDir)) {
+            fs.mkdirSync(backupDir, { recursive: true });
         }
         
         // Sanitize guild name for filename (remove invalid characters for Windows)
         const sanitizedName = guild.name.replace(/[<>:"/\\|?*]/g, '_').replace(/\s+/g, '_');
         const filename = `backup_${sanitizedName}_${timestamp}.json`;
-        const filepath = path.join(BACKUP_DIR, filename);
+        const filepath = path.join(backupDir, filename);
         
         fs.writeFileSync(filepath, JSON.stringify(backupData, null, 2));
         
