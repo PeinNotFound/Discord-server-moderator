@@ -75,7 +75,7 @@ module.exports = {
             if (data.jailedUsers) {
                 delete data.jailedUsers[target.id];
             }
-            client.dataManager.saveAll(data);
+            client.dataManager.save();
             
             // Send DM to user
             try {

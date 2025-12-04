@@ -2,14 +2,27 @@ const { checkClanCategory } = require('../../modules/clans.js');
 
 module.exports = {
     name: 'createclan',
-    description: '[Admin Only] Create a new clan and assign a leader',
+    description: 'Create a new clan and assign a leader',
     usage: '&createclan <clan name> <@user/userID>',
-    permission: 'admin',
+    permission: 'member',
     
     async execute(message, args, client) {
-        // Check if user has admin permissions
-        if (!client.permissions.hasPermission(message.member, 'admin')) {
-            return message.reply('❌ Only administrators can create clans!');
+        // Check if user has admin permissions or is a clan leader
+        const isAdmin = client.permissions.hasPermission(message.member, 'admin');
+        let isClanLeader = false;
+        
+        // Check if user is leader of any clan
+        const clanManager = client.clanManagers.get(message.guild.id);
+        const allClans = clanManager.getAllClans();
+        for (const clanId in allClans) {
+            if (clanManager.isLeader(clanId, message.author.id)) {
+                isClanLeader = true;
+                break;
+            }
+        }
+        
+        if (!isAdmin && !isClanLeader) {
+            return message.reply('❌ Only administrators or clan leaders can create clans!');
         }
 
         const guildConfig = client.getGuildConfig(message.guild.id);
@@ -41,8 +54,6 @@ module.exports = {
         } catch (error) {
             return message.reply('❌ Invalid user ID or user not found in server!');
         }
-
-        const clanManager = client.clanManagers.get(message.guild.id);
 
         // Check if leader is already in a clan
         const existingClan = clanManager.getClanByMember(leaderMember.id);

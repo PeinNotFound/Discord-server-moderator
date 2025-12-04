@@ -71,6 +71,33 @@ module.exports = {
             }
         }
         
+        // Check for clan commands (& prefix only)
+        if (message.content.startsWith('&')) {
+            const args = message.content.slice(1).trim().split(/ +/);
+            const commandName = args.shift().toLowerCase();
+            
+            // Only allow specific clan commands
+            const clanCommands = [
+                'add', 'addcoleader', 'addtag', 'allow', 'claninfo', 'clanmembers',
+                'createclan', 'deny', 'dmclan', 'lb', 'leaveclan', 'lock', 'moveclan',
+                'mute', 'nick', 'remove', 'removeleader', 'reset', 'settag', 'stats',
+                'unlock', 'unmute', 'user'
+            ];
+            
+            if (clanCommands.includes(commandName)) {
+                const clanCommand = client.commands.get(commandName);
+                if (clanCommand) {
+                    try {
+                        await clanCommand.execute(message, args, client);
+                    } catch (error) {
+                        console.error(`Error executing clan command ${commandName}:`, error);
+                        await safeReply(message, '❌ There was an error executing that clan command!');
+                    }
+                    return;
+                }
+            }
+        }
+        
         // Check for verification commands (special handling)
         if (message.content.startsWith(client.config.prefix)) {
             const args = message.content.slice(client.config.prefix.length).trim().split(/ +/);

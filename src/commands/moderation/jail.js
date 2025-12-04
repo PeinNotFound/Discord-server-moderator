@@ -116,7 +116,7 @@ module.exports = {
                 timestamp: Date.now()
             };
             
-            client.dataManager.saveAll(data);
+            client.dataManager.save();
             
             // Remove all roles and give only jail role
             await target.roles.set([jailRole]);
@@ -180,7 +180,7 @@ module.exports = {
                     
                     // Clean up
                     delete latestData.jailedUsers[target.id];
-                    client.dataManager.saveAll(latestData);
+                    client.dataManager.save();
                     
                     // Send DM
                     try {

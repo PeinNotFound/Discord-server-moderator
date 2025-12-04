@@ -68,7 +68,7 @@ module.exports = {
             };
             
             data.warnedUsers[target.id].push(warningData);
-            client.dataManager.saveAll(data);
+            client.dataManager.save();
             
             await client.logger.logAction(message.guild, 'WARN', message.member, target, reason);
             

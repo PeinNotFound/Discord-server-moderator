@@ -46,7 +46,7 @@ module.exports = {
             data.warnedUsers[target.id] = userWarnings;
         }
         
-        client.dataManager.saveAll(data);
+        client.dataManager.save();
         
         await client.logger.logAction(message.guild, 'UNWARN', message.member, target, `Removed warning #${warnNumber}`);
         

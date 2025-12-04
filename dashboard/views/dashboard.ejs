@@ -1056,15 +1056,41 @@
         
         // Update Config Fields
         function updateConfigFields(config) {
+            // Update clan-specific fields
+            if (config.clanSystemEnabled !== undefined) {
+                const clanToggle = document.getElementById('config-clanSystemEnabled');
+                if (clanToggle) {
+                    clanToggle.checked = config.clanSystemEnabled;
+                }
+            }
+            
+            if (config.clanTextCategoryId !== undefined) {
+                const textCategoryInput = document.getElementById('config-clanTextCategoryId');
+                if (textCategoryInput) {
+                    textCategoryInput.value = config.clanTextCategoryId;
+                }
+            }
+            
+            if (config.clanVoiceCategoryId !== undefined) {
+                const voiceCategoryInput = document.getElementById('config-clanVoiceCategoryId');
+                if (voiceCategoryInput) {
+                    voiceCategoryInput.value = config.clanVoiceCategoryId;
+                }
+            }
+            
+            // Update other config fields dynamically (excluding clan fields)
             const configContainer = document.getElementById('config-fields');
             
-            // Check if roles or array fields
+            // Filter out clan fields since they're handled separately
             const isArrayField = (key, value) => {
                 return Array.isArray(value) || key.toLowerCase().includes('role') && !key.toLowerCase().includes('id');
             };
             
-            // Generate form fields dynamically
-            const fields = Object.keys(config).map(key => {
+            // Generate form fields dynamically (excluding clan fields)
+            const clanFieldKeys = ['clanSystemEnabled', 'clanTextCategoryId', 'clanVoiceCategoryId'];
+            const configFields = Object.keys(config).filter(key => !clanFieldKeys.includes(key));
+            
+            const fields = configFields.map(key => {
                 let value = config[key];
                 
                 // Format label (convert camelCase to Title Case)
@@ -1313,9 +1339,38 @@
             }
             
             const configData = {};
+            
+            // Handle clan section specifically
+            if (type === 'main') {
+                // Get clan-specific fields
+                const clanSystemEnabled = document.getElementById('config-clanSystemEnabled');
+                const clanTextCategoryId = document.getElementById('config-clanTextCategoryId');
+                const clanVoiceCategoryId = document.getElementById('config-clanVoiceCategoryId');
+                
+                if (clanSystemEnabled) {
+                    configData.clanSystemEnabled = clanSystemEnabled.checked;
+                }
+                
+                if (clanTextCategoryId) {
+                    configData.clanTextCategoryId = clanTextCategoryId.value;
+                }
+                
+                if (clanVoiceCategoryId) {
+                    configData.clanVoiceCategoryId = clanVoiceCategoryId.value;
+                }
+            }
+            
+            // Get other config fields
             const prefix = 'config-';
             
             document.querySelectorAll(`[id^="${prefix}"]`).forEach(input => {
+                // Skip clan fields as they're handled above
+                if (input.id === 'config-clanSystemEnabled' || 
+                    input.id === 'config-clanTextCategoryId' || 
+                    input.id === 'config-clanVoiceCategoryId') {
+                    return;
+                }
+                
                 const key = input.id.replace(prefix, '');
                 let value;
                 

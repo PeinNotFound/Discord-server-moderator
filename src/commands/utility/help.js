@@ -11,7 +11,7 @@ module.exports = {
         const pages = [
             new EmbedBuilder()
                 .setColor('#0099ff')
-                .setTitle('🤖 Moderation Bot Commands - Page 1/3')
+                .setTitle('Moderation Bot Commands - Page 1/3')
                 .setDescription('**Here are all available commands**')
                 .addFields(
                     {
@@ -43,7 +43,7 @@ module.exports = {
             
             new EmbedBuilder()
                 .setColor('#0099ff')
-                .setTitle('🤖 Moderation Bot Commands - Page 2/3')
+                .setTitle('Moderation Bot Commands - Page 2/3')
                 .setDescription('**Here are all available commands**')
                 .addFields(
                     {
@@ -87,7 +87,7 @@ module.exports = {
             
             new EmbedBuilder()
                 .setColor('#ffd700')
-                .setTitle('🤖 Moderation Bot Commands - Page 3/3')
+                .setTitle('Moderation Bot Commands - Page 3/3')
                 .setDescription('**Staff Rank System Commands**')
                 .addFields(
                     {

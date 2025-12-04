@@ -1,8 +1,8 @@
 // Copy this file to config.js and fill in your values
 module.exports = {
     // Discord Bot Configuration
-    DISCORD_TOKEN: process.env.DISCORD_TOKEN || 'bot_token_here',
-    CLIENT_ID: process.env.CLIENT_ID || 'client_id_here',
+    DISCORD_TOKEN: process.env.DISCORD_TOKEN || 'NTgzMDM4MjA5MTM1NDc2NzUw.Gxw_-p.hey1UUAYbSU7MyyYAIVB9L7PS1Z0h165X9ybDI',
+    CLIENT_ID: process.env.CLIENT_ID || '583038209135476750',
     
     // Permission Role IDs (comma-separated for multiple roles)
     MODERATOR_ROLES: '1271140354854486232',

@@ -80,10 +80,14 @@ function initAntiRaid(client, botConfig) {
     
     // Channel Deletion Protection
     client.on('channelDelete', async (channel) => {
-        if (!channel.guild) return;
+        // Check if guild still exists
+        if (!channel.guild || !client.guilds.cache.has(channel.guild.id)) return;
         
         try {
             await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            // Double-check guild exists before fetching audit logs
+            if (!channel.guild || !client.guilds.cache.has(channel.guild.id)) return;
             
             const auditLogs = await channel.guild.fetchAuditLogs({
                 limit: 1,
@@ -127,10 +131,14 @@ function initAntiRaid(client, botConfig) {
     
     // Role Deletion Protection
     client.on('roleDelete', async (role) => {
-        if (!role.guild) return;
+        // Check if guild still exists
+        if (!role.guild || !client.guilds.cache.has(role.guild.id)) return;
         
         try {
             await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            // Double-check guild exists before fetching audit logs
+            if (!role.guild || !client.guilds.cache.has(role.guild.id)) return;
             
             const auditLogs = await role.guild.fetchAuditLogs({
                 limit: 1,
@@ -173,8 +181,14 @@ function initAntiRaid(client, botConfig) {
     
     // Ban Wave Protection
     client.on('guildBanAdd', async (ban) => {
+        // Check if guild still exists
+        if (!ban.guild || !client.guilds.cache.has(ban.guild.id)) return;
+        
         try {
             await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            // Double-check guild exists before fetching audit logs
+            if (!ban.guild || !client.guilds.cache.has(ban.guild.id)) return;
             
             const auditLogs = await ban.guild.fetchAuditLogs({
                 limit: 1,
