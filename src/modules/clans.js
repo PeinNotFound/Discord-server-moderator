@@ -250,9 +250,25 @@ class ClanManager {
         if (!clan) return { success: false, error: 'Clan not found' };
 
         try {
-            // Delete role
+            // Remove role from all members first
             const role = await guild.roles.fetch(clan.roleId);
-            if (role) await role.delete();
+            if (role) {
+                // Remove role from all clan members
+                for (const memberId of clan.members) {
+                    try {
+                        const member = await guild.members.fetch(memberId);
+                        if (member) {
+                            await member.roles.remove(role);
+                        }
+                    } catch (error) {
+                        // Continue even if we can't remove role from some members
+                        console.warn(`Failed to remove clan role from member ${memberId}:`, error.message);
+                    }
+                }
+                
+                // Delete the role
+                await role.delete();
+            }
 
             // Delete channels
             const textChannel = await guild.channels.fetch(clan.textChannelId);
