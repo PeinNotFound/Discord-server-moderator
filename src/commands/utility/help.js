@@ -81,6 +81,14 @@ module.exports = {
                             '`!antiraid` - View anti-raid protection status\n' +
                             '└ Auto-detects spam, mass deletions, ban waves',
                         inline: false
+                    },
+                    {
+                        name: '💎 Premium Role Management (Admin/Owner Only)',
+                        value: 
+                            '`!pr_owner @user @role` - Assign user as premium role owner\n' +
+                            '`!pr_add @user` - Give your managed role to member\n' +
+                            '`!pr_remove @user` - Remove your managed role from member',
+                        inline: false
                     }
                 )
                 .setFooter({ text: 'Page 2/3 • Use buttons below to navigate' }),

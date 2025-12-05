@@ -14,7 +14,7 @@ module.exports = {
             return; // Silent fail - act as unknown command
         }
         
-        const stats = antiRaid.getBackupStats();
+        const stats = antiRaid.getBackupStats(message.guild.id);
         const config = antiRaid.ANTI_RAID_CONFIG;
         
         const embed = new EmbedBuilder()

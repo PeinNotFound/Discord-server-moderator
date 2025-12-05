@@ -18,7 +18,7 @@ module.exports = {
             const result = await antiRaid.createServerBackup(message.guild, client.guildConfig);
             
             if (result.success) {
-                const stats = antiRaid.getBackupStats();
+                const stats = antiRaid.getBackupStats(message.guild.id);
                 
                 const { EmbedBuilder } = require('discord.js');
                 const embed = new EmbedBuilder()

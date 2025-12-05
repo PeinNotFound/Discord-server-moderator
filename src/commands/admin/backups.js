@@ -13,7 +13,7 @@ module.exports = {
             return; // Silent fail - act as unknown command
         }
         
-        const backupList = antiRaid.listBackups();
+        const backupList = antiRaid.listBackups(message.guild.id);
         
         if (backupList.length === 0) {
             return await safeReply(message, '📁 No backups found! Use `!backup` to create one.');

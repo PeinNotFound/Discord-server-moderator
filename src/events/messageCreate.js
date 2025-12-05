@@ -78,7 +78,7 @@ module.exports = {
             
             // Only allow specific clan commands
             const clanCommands = [
-                'add', 'addcoleader', 'addtag', 'allow', 'claninfo', 'clanmembers',
+                'add', 'addcoleader', 'addtag', 'allow', 'clanhelp', 'claninfo', 'clanmembers',
                 'createclan', 'deleteclan', 'deny', 'dmclan', 'lb', 'leaveclan', 'lock', 'moveclan',
                 'mute', 'nick', 'remove', 'removeleader', 'reset', 'settag', 'stats',
                 'unlock', 'unmute', 'user'

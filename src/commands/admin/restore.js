@@ -18,7 +18,7 @@ module.exports = {
             return await safeReply(message, '❌ Please specify a backup number! Usage: `!restore [number]`\nUse `!backups` to see available backups.');
         }
         
-        const stats = antiRaid.getBackupStats();
+        const stats = antiRaid.getBackupStats(message.guild.id);
         if (backupNumber < 1 || backupNumber > stats.count) {
             return await safeReply(message, `❌ Invalid backup number! Please choose between 1 and ${stats.count}`);
         }
@@ -47,7 +47,7 @@ module.exports = {
             const statusMsg = await message.channel.send('⏳ Restoring server from backup... This may take several minutes.');
             
             try {
-                const result = await antiRaid.restoreFromBackup(message.guild, selectedBackup.filename);
+                const result = await antiRaid.restoreFromBackup(message.guild, selectedBackup.filename, client.guildConfig);
                 
                 if (result.success) {
                     const resultEmbed = new EmbedBuilder()

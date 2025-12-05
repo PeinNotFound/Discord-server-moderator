@@ -135,6 +135,13 @@ A comprehensive, feature-rich Discord moderation bot with advanced anti-raid pro
 | `!antiraid` | View protection status | Admin |
 | `!backup_help` | Backup system guide | Admin |
 
+### Premium Role Management
+| Command | Description | Permission |
+|---------|-------------|------------|
+| `!pr_owner @user @role` | Assign user as premium role owner | Admin |
+| `!pr_add @user` | Give your managed role to member | Premium Role Owner |
+| `!pr_remove @user` | Remove your managed role from member | Premium Role Owner |
+
 ### Verification
 | Command | Description | Permission |
 |---------|-------------|------------|

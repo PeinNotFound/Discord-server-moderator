@@ -328,10 +328,17 @@ app.get('/api/config/:guildId', ensureAuthenticated, (req, res) => {
     // Load guild-specific config
     const guildConfig = guildConfigManager.loadGuildConfig(guildId);
     
+    // Load main config
+    const mainConfig = config;
+    
     res.json({
         guildId: guildId,
-        config: guildConfig,
-        keys: Object.keys(guildConfig)
+        guildConfig: guildConfig,
+        mainConfig: mainConfig,
+        keys: {
+            guild: Object.keys(guildConfig),
+            main: Object.keys(mainConfig).filter(key => !['DISCORD_TOKEN', 'CLIENT_ID'].includes(key))
+        }
     });
 });
 

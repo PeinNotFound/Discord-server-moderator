@@ -473,17 +473,32 @@ async function createServerBackup(guild, guildConfigManager = null) {
 }
 
 /**
- * Get backup statistics
+ * Get backup statistics for a specific guild
  */
-function getBackupStats() {
+function getBackupStats(guildId = null) {
     try {
-        const files = fs.readdirSync(BACKUP_DIR);
+        let backupDir;
+        if (guildId) {
+            // Use guild-specific backup directory
+            const GuildConfigManager = require('../utils/guildConfigManager.js');
+            const guildConfigManager = new GuildConfigManager();
+            backupDir = guildConfigManager.getGuildBackupPath(guildId);
+        } else {
+            // Fallback to old global backup directory
+            backupDir = BACKUP_DIR;
+        }
+        
+        if (!fs.existsSync(backupDir)) {
+            return { count: 0, backups: [] };
+        }
+        
+        const files = fs.readdirSync(backupDir);
         const backups = files.filter(f => f.startsWith('backup_') && f.endsWith('.json'));
         
         return {
             count: backups.length,
             backups: backups.map(filename => {
-                const filepath = path.join(BACKUP_DIR, filename);
+                const filepath = path.join(backupDir, filename);
                 const stats = fs.statSync(filepath);
                 return {
                     filename,
@@ -498,11 +513,11 @@ function getBackupStats() {
 }
 
 /**
- * List available backups
+ * List available backups for a specific guild
  */
-function listBackups() {
+function listBackups(guildId = null) {
     try {
-        const stats = getBackupStats();
+        const stats = getBackupStats(guildId);
         return stats.backups.map((backup, index) => {
             return `${index + 1}. **${backup.filename}**\n   Size: ${backup.size} KB | Created: ${backup.created.toLocaleString()}`;
         });
@@ -514,9 +529,19 @@ function listBackups() {
 /**
  * Restore server from backup
  */
-async function restoreFromBackup(guild, filename, options = {}) {
+async function restoreFromBackup(guild, filename, guildConfigManager = null, options = {}) {
     try {
-        const filepath = path.join(BACKUP_DIR, filename);
+        // Determine backup directory
+        let backupDir;
+        if (guildConfigManager) {
+            // Use guild-specific backup directory
+            backupDir = guildConfigManager.getGuildBackupPath(guild.id);
+        } else {
+            // Fallback to old global backup directory
+            backupDir = BACKUP_DIR;
+        }
+        
+        const filepath = path.join(backupDir, filename);
         
         if (!fs.existsSync(filepath)) {
             return { success: false, error: 'Backup file not found!' };
@@ -627,32 +652,28 @@ async function restoreFromBackup(guild, filename, options = {}) {
                     );
                     
                     if (!existingChannel) {
-                        const createData = {
+                        // Channel doesn't exist, create it
+                        const channelOptions = {
                             name: channelData.name,
                             type: channelData.type,
                             position: channelData.position,
                             reason: 'Restored from backup'
                         };
                         
-                        // Set parent category if it exists
                         if (parentCategory) {
-                            createData.parent = parentCategory.id;
+                            channelOptions.parent = parentCategory;
                         }
                         
-                        // Text channel specific
-                        if (channelData.type === 0) { // Text channel
-                            if (channelData.topic) createData.topic = channelData.topic;
-                            if (channelData.nsfw !== undefined) createData.nsfw = channelData.nsfw;
-                            if (channelData.rateLimitPerUser) createData.rateLimitPerUser = channelData.rateLimitPerUser;
+                        if (channelData.type === ChannelType.GuildText) {
+                            channelOptions.topic = channelData.topic || null;
+                            channelOptions.nsfw = channelData.nsfw || false;
+                            channelOptions.rateLimitPerUser = channelData.rateLimitPerUser || 0;
+                        } else if (channelData.type === ChannelType.GuildVoice) {
+                            channelOptions.bitrate = channelData.bitrate || 64000;
+                            channelOptions.userLimit = channelData.userLimit || 0;
                         }
                         
-                        // Voice channel specific
-                        if (channelData.type === 2) { // Voice channel
-                            if (channelData.bitrate) createData.bitrate = channelData.bitrate;
-                            if (channelData.userLimit) createData.userLimit = channelData.userLimit;
-                        }
-                        
-                        await guild.channels.create(createData);
+                        await guild.channels.create(channelOptions);
                         results.channelsCreated++;
                     }
                 } catch (error) {
@@ -661,11 +682,7 @@ async function restoreFromBackup(guild, filename, options = {}) {
             }
         }
         
-        return { 
-            success: true, 
-            results,
-            backupInfo: backupData.guildInfo
-        };
+        return { success: true, results };
         
     } catch (error) {
         console.error('Restore error:', error);

@@ -623,6 +623,7 @@
                             <div>
                                 <h4 class="font-semibold text-purple-400 mb-2">👥 Member Commands</h4>
                                 <ul class="text-sm space-y-1 text-gray-300">
+                                    <li><code>&clanhelp</code> - Show this help</li>
                                     <li><code>&claninfo [name]</code> - View clan info</li>
                                     <li><code>&user [@member]</code> - View profile</li>
                                     <li><code>&stats</code> - Clan statistics</li>
@@ -1028,7 +1029,7 @@
                 const configData = await configResponse.json();
                 
                 // Update config fields
-                updateConfigFields(configData.config);
+                updateConfigFields(configData);
                 
                 // Load command settings
                 await loadCommandSettings(guildId);
@@ -1056,43 +1057,51 @@
         }
         
         // Update Config Fields
-        function updateConfigFields(config) {
+        function updateConfigFields(data) {
+            const guildConfig = data.guildConfig || {};
+            const mainConfig = data.mainConfig || {};
+            
             // Update clan-specific fields
-            if (config.clanSystemEnabled !== undefined) {
+            if (guildConfig.clanSystemEnabled !== undefined) {
                 const clanToggle = document.getElementById('config-clanSystemEnabled');
                 if (clanToggle) {
-                    clanToggle.checked = config.clanSystemEnabled;
+                    clanToggle.checked = guildConfig.clanSystemEnabled;
                 }
             }
             
-            if (config.clanTextCategoryId !== undefined) {
+            if (guildConfig.clanTextCategoryId !== undefined) {
                 const textCategoryInput = document.getElementById('config-clanTextCategoryId');
                 if (textCategoryInput) {
-                    textCategoryInput.value = config.clanTextCategoryId;
+                    textCategoryInput.value = guildConfig.clanTextCategoryId;
                 }
             }
             
-            if (config.clanVoiceCategoryId !== undefined) {
+            if (guildConfig.clanVoiceCategoryId !== undefined) {
                 const voiceCategoryInput = document.getElementById('config-clanVoiceCategoryId');
                 if (voiceCategoryInput) {
-                    voiceCategoryInput.value = config.clanVoiceCategoryId;
+                    voiceCategoryInput.value = guildConfig.clanVoiceCategoryId;
                 }
             }
             
             // Update other config fields dynamically (excluding clan fields)
             const configContainer = document.getElementById('config-fields');
             
-            // Filter out clan fields since they're handled separately
+            // Combine main config and guild config, prioritizing guild config values
+            const combinedConfig = { ...mainConfig, ...guildConfig };
+            
+            // Filter out sensitive and clan fields
+            const sensitiveKeys = ['DISCORD_TOKEN', 'CLIENT_ID'];
+            const clanFieldKeys = ['clanSystemEnabled', 'clanTextCategoryId', 'clanVoiceCategoryId'];
+            const excludedKeys = [...sensitiveKeys, ...clanFieldKeys];
+            
+            const configFields = Object.keys(combinedConfig).filter(key => !excludedKeys.includes(key));
+            
             const isArrayField = (key, value) => {
                 return Array.isArray(value) || key.toLowerCase().includes('role') && !key.toLowerCase().includes('id');
             };
             
-            // Generate form fields dynamically (excluding clan fields)
-            const clanFieldKeys = ['clanSystemEnabled', 'clanTextCategoryId', 'clanVoiceCategoryId'];
-            const configFields = Object.keys(config).filter(key => !clanFieldKeys.includes(key));
-            
             const fields = configFields.map(key => {
-                let value = config[key];
+                let value = combinedConfig[key];
                 
                 // Format label (convert camelCase to Title Case)
                 const label = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
@@ -1120,11 +1129,11 @@
                 
                 // Handle arrays with tag input
                 if (isArrayField(key, value)) {
-                    const tags = Array.isArray(value) ? value : (value ? value.split(',').map(v => v.trim()) : []);
+                    const tags = Array.isArray(value) ? value : (value ? value.toString().split(',').map(v => v.trim()) : []);
                     const tagsHtml = tags.map(tag => `
                         <span class="tag-chip">
                             ${tag}
-                            <span class="tag-chip-remove" onclick="removeTag(this)">xd7</span>
+                            <span class="tag-chip-remove" onclick="removeTag(this)">&times;</span>
                         </span>
                     `).join('');
                     
@@ -1269,8 +1278,8 @@
                                 <div class="flex justify-between items-start">
                                     <div>
                                         <h3 class="font-bold">${action.action}</h3>
-                                        <p class="text-sm text-gray-400">Target: ${action.target || 'Unknown'}</p>
-                                        <p class="text-sm text-gray-400">Moderator: ${action.moderator || 'Unknown'}</p>
+                                        <p class="text-sm text-gray-400">Target: ${action.target ? action.target.username + '#' + action.target.discriminator : 'Unknown'}</p>
+                                        <p class="text-sm text-gray-400">Moderator: ${action.moderator ? action.moderator.username + '#' + action.moderator.discriminator : 'Unknown'}</p>
                                     </div>
                                     <span class="badge badge-sm">${new Date(action.timestamp).toLocaleString()}</span>
                                 </div>

@@ -109,7 +109,10 @@ class GuildConfigManager {
             // Clan System
             clanSystemEnabled: false,
             clanTextCategoryId: '',
-            clanVoiceCategoryId: ''
+            clanVoiceCategoryId: '',
+            
+            // Premium Role Management
+            premiumRoleOwners: {} // Maps role IDs to owner user IDs
         };
     }
 
