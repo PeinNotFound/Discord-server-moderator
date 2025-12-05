@@ -444,7 +444,7 @@ app.post('/api/embed/:guildId/send', ensureAuthenticated, async (req, res) => {
         // Emit event for bot to process
         io.emit('embedSendRequest', { guildId, channelId, embed, webhook });
         
-        res.json({ success: true, message: 'Embed message queued for sending' });
+        res.json({ success: true, message: 'Embed message queued for sending. Check bot console for delivery status.' });
     } catch (error) {
         console.error('Failed to queue embed:', error);
         res.json({ success: false, message: 'Failed to send embed' });

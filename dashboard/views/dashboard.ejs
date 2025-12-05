@@ -1086,6 +1086,11 @@
             // Update other config fields dynamically (excluding clan fields)
             const configContainer = document.getElementById('config-fields');
             
+            // Clear existing fields by removing all child elements
+            while (configContainer.firstChild) {
+                configContainer.removeChild(configContainer.firstChild);
+            }
+            
             // Combine main config and guild config, prioritizing guild config values
             const combinedConfig = { ...mainConfig, ...guildConfig };
             
@@ -1100,35 +1105,39 @@
                 return Array.isArray(value) || key.toLowerCase().includes('role') && !key.toLowerCase().includes('id');
             };
             
-            const fields = configFields.map(key => {
+            // Create document fragment for better performance
+            const fragment = document.createDocumentFragment();
+            
+            configFields.forEach(key => {
                 let value = combinedConfig[key];
                 
                 // Format label (convert camelCase to Title Case)
                 const label = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
                 
+                let fieldElement;
+                
                 // Bot Enabled toggle
                 if (key === 'botEnabled') {
-                    return `
-                        <div class="form-control col-span-2">
-                            <div class="card bg-gray-700 border border-gray-600">
-                                <div class="card-body p-4">
-                                    <label class="label cursor-pointer">
-                                        <div>
-                                            <span class="label-text font-bold text-lg">${label}</span>
-                                            <p class="text-sm text-gray-400 mt-1">Enable or disable the bot for this server</p>
-                                        </div>
-                                        <input type="checkbox" class="toggle toggle-lg toggle-success" 
-                                               id="config-${key}"
-                                               ${value ? 'checked' : ''} />
-                                    </label>
-                                </div>
+                    fieldElement = document.createElement('div');
+                    fieldElement.className = 'form-control col-span-2';
+                    fieldElement.innerHTML = `
+                        <div class="card bg-gray-700 border border-gray-600">
+                            <div class="card-body p-4">
+                                <label class="label cursor-pointer">
+                                    <div>
+                                        <span class="label-text font-bold text-lg">${label}</span>
+                                        <p class="text-sm text-gray-400 mt-1">Enable or disable the bot for this server</p>
+                                    </div>
+                                    <input type="checkbox" class="toggle toggle-lg toggle-success" 
+                                           id="config-${key}"
+                                           ${value ? 'checked' : ''} />
+                                </label>
                             </div>
                         </div>
                     `;
                 }
-                
                 // Handle arrays with tag input
-                if (isArrayField(key, value)) {
+                else if (isArrayField(key, value)) {
                     const tags = Array.isArray(value) ? value : (value ? value.toString().split(',').map(v => v.trim()) : []);
                     const tagsHtml = tags.map(tag => `
                         <span class="tag-chip">
@@ -1137,27 +1146,28 @@
                         </span>
                     `).join('');
                     
-                    return `
-                        <div class="form-control">
-                            <label class="label">
-                                <span class="label-text font-medium">${label}</span>
-                                <span class="label-text-alt text-gray-500">${key}</span>
-                            </label>
-                            <div class="tag-input-container" data-field="${key}" onclick="focusTagInput(this)">
-                                ${tagsHtml}
-                                <input type="text" 
-                                       class="tag-input" 
-                                       placeholder="Type and press Enter..." 
-                                       onkeydown="handleTagInput(event, this)" />
-                            </div>
-                            <input type="hidden" id="config-${key}" value="${tags.join(',')}" />
+                    fieldElement = document.createElement('div');
+                    fieldElement.className = 'form-control';
+                    fieldElement.innerHTML = `
+                        <label class="label">
+                            <span class="label-text font-medium">${label}</span>
+                            <span class="label-text-alt text-gray-500">${key}</span>
+                        </label>
+                        <div class="tag-input-container" data-field="${key}" onclick="focusTagInput(this)">
+                            ${tagsHtml}
+                            <input type="text" 
+                                   class="tag-input" 
+                                   placeholder="Type and press Enter..." 
+                                   onkeydown="handleTagInput(event, this)" />
                         </div>
+                        <input type="hidden" id="config-${key}" value="${tags.join(',')}" />
                     `;
                 }
-                
                 // Regular input
-                return `
-                    <div class="form-control">
+                else {
+                    fieldElement = document.createElement('div');
+                    fieldElement.className = 'form-control';
+                    fieldElement.innerHTML = `
                         <label class="label">
                             <span class="label-text font-medium">${label}</span>
                             <span class="label-text-alt text-gray-500">${key}</span>
@@ -1167,11 +1177,13 @@
                                class="input input-bordered bg-gray-800" 
                                id="config-${key}"
                                value="${value || ''}" />
-                    </div>
-                `;
-            }).join('');
+                    `;
+                }
+                
+                fragment.appendChild(fieldElement);
+            });
             
-            configContainer.innerHTML = fields;
+            configContainer.appendChild(fragment);
         }
         
         // Handle tag input

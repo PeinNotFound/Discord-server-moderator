@@ -140,79 +140,93 @@ if (persistentData.jailedUsers) {
 }
 
 // Connect to dashboard socket for live updates
-if (process.env.NODE_ENV !== 'production') {
-    const io = require('socket.io-client');
-    const dashboardSocket = io('http://localhost:3000');
-    
-    dashboardSocket.on('connect', () => {
-        console.log('📡 Connected to dashboard server');
-    });
-    
-    dashboardSocket.on('embedSendRequest', async (data) => {
-        const { guildId, channelId, embed, webhook } = data;
-        console.log(`📬 Received embed send request for guild ${guildId}, channel ${channelId}`);
-        
-        try {
-            const { EmbedBuilder } = require('discord.js');
-            const guild = client.guilds.cache.get(guildId);
-            if (!guild) {
-                console.error('Guild not found:', guildId);
-                return;
-            }
-            
-            const channel = guild.channels.cache.get(channelId);
-            if (!channel) {
-                console.error('Channel not found:', channelId);
-                return;
-            }
-            
-            // Build Discord embed
-            const discordEmbed = new EmbedBuilder();
-            
-            if (embed.title) discordEmbed.setTitle(embed.title);
-            if (embed.description) discordEmbed.setDescription(embed.description);
-            if (embed.color) discordEmbed.setColor(embed.color);
-            if (embed.url) discordEmbed.setURL(embed.url);
-            if (embed.author) discordEmbed.setAuthor(embed.author);
-            if (embed.thumbnail) discordEmbed.setThumbnail(embed.thumbnail.url);
-            if (embed.image) discordEmbed.setImage(embed.image.url);
-            if (embed.footer) discordEmbed.setFooter(embed.footer);
-            if (embed.timestamp) discordEmbed.setTimestamp(new Date(embed.timestamp));
-            if (embed.fields && embed.fields.length > 0) discordEmbed.addFields(embed.fields);
-            
-            // Send via webhook or normal bot message
-            if (webhook && webhook.useWebhook) {
-                // Get or create webhook
-                const webhooks = await channel.fetchWebhooks();
-                let webhook_obj = webhooks.find(wh => wh.owner.id === client.user.id);
+const io = require('socket.io-client');
+const dashboardSocket = io('http://localhost:3000');
+
+dashboardSocket.on('connect', () => {
+    console.log('📡 Connected to dashboard server');
+});
+
+dashboardSocket.on('embedSendRequest', async (data) => {
+    const { guildId, channelId, embed, webhook } = data;
+    console.log(`📬 Received embed send request for guild ${guildId}, channel ${channelId}`);
                 
-                if (!webhook_obj) {
-                    webhook_obj = await channel.createWebhook({
-                        name: webhook.username || 'Bot Webhook',
-                        avatar: webhook.avatarURL
-                    });
-                }
-                
-                await webhook_obj.send({
-                    username: webhook.username || 'Webhook',
-                    avatarURL: webhook.avatarURL,
-                    embeds: [discordEmbed]
-                });
-                console.log('✅ Embed sent via webhook');
-            } else {
-                await channel.send({ embeds: [discordEmbed] });
-                console.log('✅ Embed sent successfully');
-            }
-        } catch (error) {
-            console.error('Failed to send embed:', error);
+    try {
+        const { EmbedBuilder } = require('discord.js');
+        const guild = client.guilds.cache.get(guildId);
+        if (!guild) {
+            console.error('Guild not found:', guildId);
+            return;
         }
-    });
-    
-    dashboardSocket.on('configUpdated', (data) => {
-        const { guildId } = data;
-        client.reloadGuildConfig(guildId);
-    });
-}
+                    
+        const channel = guild.channels.cache.get(channelId);
+        if (!channel) {
+            console.error('Channel not found:', channelId);
+            return;
+        }
+                    
+        // Check if bot has permission to send messages in the channel
+        const permissions = channel.permissionsFor(client.user);
+        if (!permissions || !permissions.has('SendMessages')) {
+            console.error('Bot does not have permission to send messages in channel:', channelId);
+            return;
+        }
+                    
+        // Build Discord embed
+        const discordEmbed = new EmbedBuilder();
+                    
+        if (embed.title) discordEmbed.setTitle(embed.title);
+        if (embed.description) discordEmbed.setDescription(embed.description);
+        if (embed.color) discordEmbed.setColor(embed.color);
+        if (embed.url) discordEmbed.setURL(embed.url);
+        if (embed.author) discordEmbed.setAuthor(embed.author);
+        if (embed.thumbnail) discordEmbed.setThumbnail(embed.thumbnail.url);
+        if (embed.image) discordEmbed.setImage(embed.image.url);
+        if (embed.footer) discordEmbed.setFooter(embed.footer);
+        if (embed.timestamp) discordEmbed.setTimestamp(new Date(embed.timestamp));
+        if (embed.fields && embed.fields.length > 0) discordEmbed.addFields(embed.fields);
+                    
+        // Send via webhook or normal bot message
+        if (webhook && webhook.useWebhook) {
+            // Get or create webhook
+            const webhooks = await channel.fetchWebhooks();
+            let webhook_obj = webhooks.find(wh => wh.owner.id === client.user.id);
+                        
+            if (!webhook_obj) {
+                // Check if bot has permission to create webhooks
+                if (!permissions.has('ManageWebhooks')) {
+                    console.error('Bot does not have permission to create webhooks in channel:', channelId);
+                    // Fall back to normal message sending
+                    await channel.send({ embeds: [discordEmbed] });
+                    console.log('✅ Embed sent successfully (fallback)');
+                    return;
+                }
+                            
+                webhook_obj = await channel.createWebhook({
+                    name: webhook.username || 'Bot Webhook',
+                    avatar: webhook.avatarURL
+                });
+            }
+                        
+            await webhook_obj.send({
+                username: webhook.username || 'Webhook',
+                avatarURL: webhook.avatarURL,
+                embeds: [discordEmbed]
+            });
+            console.log('✅ Embed sent via webhook');
+        } else {
+            await channel.send({ embeds: [discordEmbed] });
+            console.log('✅ Embed sent successfully');
+        }
+    } catch (error) {
+        console.error('Failed to send embed:', error);
+    }
+});
+
+dashboardSocket.on('configUpdated', (data) => {
+    const { guildId } = data;
+    client.reloadGuildConfig(guildId);
+});
 
 // Login to Discord
 client.login(config.DISCORD_TOKEN);
