@@ -9,6 +9,19 @@ class DataManager {
     constructor(filename) {
         this.filePath = path.join(__dirname, '..', filename);
         this.data = this.load();
+        this.saveTimeout = null;
+        this.lastSave = Date.now();
+        this.pendingChanges = false;
+
+        // Save on exit
+        process.on('SIGINT', () => {
+            this.forceSave();
+            process.exit();
+        });
+
+        process.on('exit', () => {
+            this.forceSave();
+        });
     }
 
     load() {
@@ -24,8 +37,32 @@ class DataManager {
     }
 
     save() {
+        this.pendingChanges = true;
+
+        // If a save is already scheduled, do nothing
+        if (this.saveTimeout) {
+            return;
+        }
+
+        // Schedule a save in 30 seconds
+        this.saveTimeout = setTimeout(() => {
+            this.forceSave();
+        }, 30000); // 30 seconds
+    }
+
+    forceSave() {
+        if (!this.pendingChanges) return;
+
         try {
             fs.writeFileSync(this.filePath, JSON.stringify(this.data, null, 2));
+            // console.log(`💾 Data saved to ${path.basename(this.filePath)}`);
+            this.pendingChanges = false;
+            this.lastSave = Date.now();
+
+            if (this.saveTimeout) {
+                clearTimeout(this.saveTimeout);
+                this.saveTimeout = null;
+            }
         } catch (error) {
             console.error(`Error saving ${this.filePath}:`, error);
         }

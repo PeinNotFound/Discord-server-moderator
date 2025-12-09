@@ -11,7 +11,7 @@ class Logger {
     constructor(config) {
         this.config = config;
         this.logDir = path.join(__dirname, '..', 'logs');
-        
+
         // Create logs directory if it doesn't exist
         if (!fs.existsSync(this.logDir)) {
             fs.mkdirSync(this.logDir, { recursive: true });
@@ -23,25 +23,25 @@ class Logger {
      */
     async logAction(guild, action, moderator, target, reason = 'No reason provided') {
         const { logChannelId, embedColor, actionEmoji } = this.getLogConfig(action);
-        
+
         // Log to file
         this.logToFile(action, moderator, target, reason);
-        
+
         // If specific log channel is not configured, skip logging
         if (!logChannelId || logChannelId.startsWith('your_')) {
             return;
         }
-        
+
         const logChannel = guild.channels.cache.get(logChannelId);
         if (!logChannel) return;
-        
+
         // Handle both real user objects and system/auto actions
         const moderatorTag = moderator.user ? moderator.user.tag : moderator.tag || 'System';
         const moderatorId = moderator.id || 'N/A';
-        const moderatorAvatar = (moderator.user && typeof moderator.user.displayAvatarURL === 'function') 
-            ? moderator.user.displayAvatarURL() 
+        const moderatorAvatar = (moderator.user && typeof moderator.user.displayAvatarURL === 'function')
+            ? moderator.user.displayAvatarURL()
             : guild.iconURL();
-        
+
         const embed = new EmbedBuilder()
             .setColor(embedColor)
             .setTitle(`${actionEmoji} Moderation Action: ${action}`)
@@ -54,12 +54,12 @@ class Logger {
                 { name: '🏠 Server', value: guild.name, inline: true }
             )
             .setThumbnail(target.user ? target.user.displayAvatarURL() : guild.iconURL())
-            .setFooter({ 
+            .setFooter({
                 text: `Moderator ID: ${moderatorId} • Action ID: ${Math.random().toString(36).substr(2, 9)}`,
                 iconURL: moderatorAvatar
             })
             .setTimestamp();
-        
+
         try {
             await logChannel.send({ embeds: [embed] });
         } catch (error) {
@@ -140,7 +140,7 @@ class Logger {
             actionEmoji: '📋'
         };
     }
-    
+
     /**
      * Log action to file for dashboard
      */
@@ -160,31 +160,42 @@ class Logger {
             },
             reason: reason
         };
-        
-        const logFile = path.join(this.logDir, 'moderation-actions.json');
-        
-        let logs = [];
-        if (fs.existsSync(logFile)) {
-            try {
-                const data = fs.readFileSync(logFile, 'utf8');
-                logs = JSON.parse(data);
-            } catch (error) {
-                console.error('Failed to read log file:', error);
+
+        // Initialize memory cache if not exists
+        if (!this.cachedLogs) {
+            const logFile = path.join(this.logDir, 'moderation-actions.json');
+            if (fs.existsSync(logFile)) {
+                try {
+                    const data = fs.readFileSync(logFile, 'utf8');
+                    this.cachedLogs = JSON.parse(data);
+                } catch (error) {
+                    console.error('Failed to read log file:', error);
+                    this.cachedLogs = [];
+                }
+            } else {
+                this.cachedLogs = [];
             }
         }
-        
-        logs.push(logEntry);
-        
+
+        this.cachedLogs.push(logEntry);
+
         // Keep only last 1000 entries
-        if (logs.length > 1000) {
-            logs = logs.slice(-1000);
+        if (this.cachedLogs.length > 1000) {
+            this.cachedLogs = this.cachedLogs.slice(-1000);
         }
-        
-        try {
-            fs.writeFileSync(logFile, JSON.stringify(logs, null, 2));
-        } catch (error) {
-            console.error('Failed to write log file:', error);
-        }
+
+        // Save with throttle (reuse this mechanism if possible, or simple debounce)
+        if (this.logSaveTimeout) return;
+
+        this.logSaveTimeout = setTimeout(() => {
+            const logFile = path.join(this.logDir, 'moderation-actions.json');
+            try {
+                fs.writeFileSync(logFile, JSON.stringify(this.cachedLogs, null, 2));
+                this.logSaveTimeout = null;
+            } catch (error) {
+                console.error('Failed to write log file:', error);
+            }
+        }, 10000); // Save logs at most every 10 seconds
     }
 }
 
@@ -197,13 +208,13 @@ async function safeReply(message, contentOrOptions) {
         if (!message || !message.channel) {
             return null;
         }
-        
+
         // Try to fetch the channel to ensure it still exists
         const channel = await message.client.channels.fetch(message.channel.id).catch(() => null);
         if (!channel) {
             return null;
         }
-        
+
         // Reply with content or options (Discord.js handles both)
         return await message.reply(contentOrOptions);
     } catch (error) {
