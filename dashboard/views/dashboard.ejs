@@ -1,9 +1,11 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bot Dashboard - <%= user.username %></title>
+    <title>Bot Dashboard - <%= user.username %>
+    </title>
     <script src="/socket.io/socket.io.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/daisyui@4.4.19/dist/full.min.css" rel="stylesheet" type="text/css" />
@@ -41,10 +43,12 @@
             min-height: 2.5rem;
             cursor: text;
         }
+
         .tag-input-container:focus-within {
             border-color: #5865F2;
             box-shadow: 0 0 0 3px rgba(88, 101, 242, 0.1);
         }
+
         .tag-chip {
             display: inline-flex;
             align-items: center;
@@ -56,19 +60,30 @@
             font-size: 0.875rem;
             animation: chipIn 0.2s ease-out;
         }
+
         @keyframes chipIn {
-            from { transform: scale(0.8); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
+            from {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
         }
+
         .tag-chip-remove {
             cursor: pointer;
             font-weight: bold;
             opacity: 0.7;
             transition: opacity 0.2s;
         }
+
         .tag-chip-remove:hover {
             opacity: 1;
         }
+
         .tag-input {
             flex: 1;
             min-width: 120px;
@@ -78,26 +93,31 @@
             outline: none;
             font-size: 0.875rem;
         }
+
         .tag-input::placeholder {
             color: #6b7280;
         }
     </style>
 </head>
+
 <body class="bg-gray-900 text-gray-100">
-    
+
     <!-- Main Layout -->
     <div class="flex h-screen">
-        
-       <!-- Server Sidebar -->
-        <div class="w-20 bg-gray-950 flex flex-col items-center py-3 space-y-3 overflow-y-auto scrollbar-hide" style="scrollbar-width: none; -ms-overflow-style: none;">
+
+        <!-- Server Sidebar -->
+        <div class="w-20 bg-gray-950 flex flex-col items-center py-3 space-y-3 overflow-y-auto scrollbar-hide"
+            style="scrollbar-width: none; -ms-overflow-style: none;">
             <style>
                 .scrollbar-hide::-webkit-scrollbar {
                     display: none;
                 }
+
                 .server-btn {
                     position: relative;
                     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
                 }
+
                 .server-btn::before {
                     content: '';
                     position: absolute;
@@ -110,19 +130,24 @@
                     border-radius: 0 4px 4px 0;
                     transition: height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
                 }
+
                 .server-btn.active::before {
                     height: 40px;
                 }
+
                 .server-btn:hover::before {
                     height: 20px;
                 }
+
                 .server-btn.active .server-icon-wrapper {
                     border-radius: 16px;
                     background: #5865F2;
                 }
+
                 .server-btn:hover .server-icon-wrapper {
                     border-radius: 16px;
                 }
+
                 .server-icon-wrapper {
                     width: 48px;
                     height: 48px;
@@ -135,46 +160,44 @@
                     background: #36393f;
                 }
             </style>
-            
+
             <!-- User Avatar -->
             <div class="tooltip tooltip-right" data-tip="<%= user.username %>">
                 <div class="avatar online">
                     <div class="w-12 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
-                        <img src="https://cdn.discordapp.com/avatars/<%= user.id %>/<%= user.avatar %>.png" 
-                             alt="<%= user.username %>"
-                             onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'" />
+                        <img src="https://cdn.discordapp.com/avatars/<%= user.id %>/<%= user.avatar %>.png"
+                            alt="<%= user.username %>"
+                            onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'" />
                     </div>
                 </div>
             </div>
-            
+
             <div class="w-8 h-0.5 bg-gray-700 rounded-full"></div>
-            
+
             <!-- Server Icons -->
-            <% if (user.guilds && user.guilds.length > 0) { %>
+            <% if (user.guilds && user.guilds.length> 0) { %>
                 <% user.guilds.forEach(function(guild) { %>
                     <% if (guild.permissions & 0x8) { %>
                         <div class="tooltip tooltip-right" data-tip="<%= guild.name %>">
-                            <button onclick="selectServer('<%= guild.id %>', '<%= guild.name %>')" 
-                                    class="server-btn"
-                                    data-server-id="<%= guild.id %>">
+                            <button onclick="selectServer('<%= guild.id %>', '<%= guild.name %>')" class="server-btn"
+                                data-server-id="<%= guild.id %>">
                                 <div class="server-icon-wrapper">
                                     <% if (guild.icon) { %>
-                                        <img src="https://cdn.discordapp.com/icons/<%= guild.id %>/<%= guild.icon %>.png" 
-                                             alt="<%= guild.name %>" 
-                                             class="w-full h-full object-cover" />
-                                    <% } else { %>
-                                        <div class="text-xl font-bold text-white">
-                                            <%= guild.name.charAt(0).toUpperCase() %>
-                                        </div>
-                                    <% } %>
+                                        <img src="https://cdn.discordapp.com/icons/<%= guild.id %>/<%= guild.icon %>.png"
+                                            alt="<%= guild.name %>" class="w-full h-full object-cover" />
+                                        <% } else { %>
+                                            <div class="text-xl font-bold text-white">
+                                                <%= guild.name.charAt(0).toUpperCase() %>
+                                            </div>
+                                            <% } %>
                                 </div>
                             </button>
                         </div>
-                    <% } %>
-                <% }); %>
-            <% } %>
+                        <% } %>
+                            <% }); %>
+                                <% } %>
         </div>
-        
+
         <!-- Navigation Sidebar -->
         <div class="w-64 bg-gray-800 border-r border-gray-700 flex flex-col">
             <!-- Server Name Header -->
@@ -182,76 +205,79 @@
                 <h2 class="text-lg font-bold truncate" id="currentServerName">Select a Server</h2>
                 <div class="flex items-center mt-2">
                     <span class="flex h-3 w-3 relative">
-                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75"></span>
+                        <span
+                            class="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75"></span>
                         <span class="relative inline-flex rounded-full h-3 w-3 bg-success"></span>
                     </span>
                     <span class="ml-2 text-sm text-gray-400">Live</span>
                 </div>
             </div>
-            
+
             <!-- Navigation Menu -->
             <ul class="menu p-4 flex-1 overflow-y-auto">
                 <li class="menu-title">
                     <span>Dashboard</span>
                 </li>
                 <li><a onclick="showSection('overview')" class="active">
-                    <i class="fas fa-chart-line"></i>
-                    Overview
-                </a></li>
+                        <i class="fas fa-chart-line"></i>
+                        Overview
+                    </a></li>
                 <li><a onclick="showSection('modactions')">
-                    <i class="fas fa-list"></i>
-                    Mod Actions
-                </a></li>
+                        <i class="fas fa-list"></i>
+                        Mod Actions
+                    </a></li>
                 <li><a onclick="showSection('moderate')">
-                    <i class="fas fa-shield-alt"></i>
-                    Moderate
-                </a></li>
-                
+                        <i class="fas fa-shield-alt"></i>
+                        Moderate
+                    </a></li>
+
                 <li class="menu-title mt-4">
                     <span>Configuration</span>
                 </li>
                 <li><a onclick="showSection('commands')">
-                    <i class="fas fa-terminal"></i>
-                    Commands
-                </a></li>
+                        <i class="fas fa-terminal"></i>
+                        Commands
+                    </a></li>
                 <li><a onclick="showSection('clans')">
-                    <i class="fas fa-shield-alt"></i>
-                    Clan System
-                </a></li>
+                        <i class="fas fa-shield-alt"></i>
+                        Clan System
+                    </a></li>
                 <li><a onclick="showSection('embed-builder')">
-                    <i class="fas fa-envelope"></i>
-                    Embed Builder
-                </a></li>
+                        <i class="fas fa-envelope"></i>
+                        Embed Builder
+                    </a></li>
                 <li><a onclick="showSection('main-config')">
-                    <i class="fas fa-cog"></i>
-                    Main Config
-                </a></li>
+                        <i class="fas fa-cog"></i>
+                        Main Config
+                    </a></li>
                 <li><a onclick="showSection('messages-config')">
-                    <i class="fas fa-comment"></i>
-                    Messages
-                </a></li>
+                        <i class="fas fa-comment"></i>
+                        Messages
+                    </a></li>
                 <li><a onclick="showSection('verification-config')">
-                    <i class="fas fa-check-circle"></i>
-                    Verification
-                </a></li>
+                        <i class="fas fa-check-circle"></i>
+                        Verification
+                    </a></li>
                 <li><a onclick="showSection('advanced-config')">
-                    <i class="fas fa-wrench"></i>
-                    Advanced
-                </a></li>
+                        <i class="fas fa-wrench"></i>
+                        Advanced
+                    </a></li>
             </ul>
-            
+
             <!-- User Profile -->
             <div class="p-4 border-t border-gray-700">
                 <div class="flex items-center space-x-3">
                     <div class="avatar">
                         <div class="w-10 rounded-full">
-                            <img src="https://cdn.discordapp.com/avatars/<%= user.id %>/<%= user.avatar %>.png" 
-                                 alt="<%= user.username %>"
-                                 onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'" />
+                            <img src="https://cdn.discordapp.com/avatars/<%= user.id %>/<%= user.avatar %>.png"
+                                alt="<%= user.username %>"
+                                onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'" />
                         </div>
                     </div>
                     <div class="flex-1 min-w-0">
-                        <p class="text-sm font-medium truncate"><%= user.username %></p>
+                        <p class="text-sm font-medium truncate">
+                            <%= user.username %>
+                        </p>
                         <p class="text-xs text-gray-400">Administrator</p>
                     </div>
                     <a href="/logout" class="btn btn-ghost btn-sm btn-circle">
@@ -260,17 +286,17 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- Main Content Area -->
         <div class="flex-1 overflow-y-auto bg-gray-900">
-            
+
             <!-- Overview Section -->
             <div id="section-overview" class="section-content p-8">
                 <div class="mb-6">
                     <h1 class="text-3xl font-bold mb-2">Dashboard Overview</h1>
                     <p class="text-gray-400">Monitor your server's moderation statistics</p>
                 </div>
-                
+
                 <!-- Stats Cards -->
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                     <div class="stats shadow bg-gray-800 border border-gray-700">
@@ -279,22 +305,26 @@
                                 <i class="fas fa-exclamation-triangle text-3xl"></i>
                             </div>
                             <div class="stat-title">Warned Users</div>
-                            <div class="stat-value text-warning" id="warnedCount"><%= stats.warnedUsers %></div>
+                            <div class="stat-value text-warning" id="warnedCount">
+                                <%= stats.warnedUsers %>
+                            </div>
                             <div class="stat-desc">Active warnings</div>
                         </div>
                     </div>
-                    
+
                     <div class="stats shadow bg-gray-800 border border-gray-700">
                         <div class="stat">
                             <div class="stat-figure text-error">
                                 <i class="fas fa-user-lock text-3xl"></i>
                             </div>
                             <div class="stat-title">Jailed Users</div>
-                            <div class="stat-value text-error" id="jailedCount"><%= stats.jailedUsers %></div>
+                            <div class="stat-value text-error" id="jailedCount">
+                                <%= stats.jailedUsers %>
+                            </div>
                             <div class="stat-desc">Currently jailed</div>
                         </div>
                     </div>
-                    
+
                     <div class="stats shadow bg-gray-800 border border-gray-700">
                         <div class="stat">
                             <div class="stat-figure text-success">
@@ -305,19 +335,21 @@
                             <div class="stat-desc">All systems operational</div>
                         </div>
                     </div>
-                    
+
                     <div class="stats shadow bg-gray-800 border border-gray-700">
                         <div class="stat">
                             <div class="stat-figure text-info">
                                 <i class="fas fa-server text-3xl"></i>
                             </div>
                             <div class="stat-title">Servers</div>
-                            <div class="stat-value text-info"><%= user.guilds ? user.guilds.length : 0 %></div>
+                            <div class="stat-value text-info">
+                                <%= user.guilds ? user.guilds.length : 0 %>
+                            </div>
                             <div class="stat-desc">Total managed</div>
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Recent Activity -->
                 <div class="card bg-gray-800 border border-gray-700 shadow-xl">
                     <div class="card-body">
@@ -334,14 +366,14 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Mod Actions Section -->
             <div id="section-modactions" class="section-content p-8 hidden">
                 <div class="mb-6">
                     <h1 class="text-3xl font-bold mb-2">Moderation Actions</h1>
                     <p class="text-gray-400">View all moderation actions taken</p>
                 </div>
-                
+
                 <!-- Filter Buttons -->
                 <div class="flex flex-wrap gap-2 mb-6">
                     <button class="btn btn-sm btn-primary" onclick="filterActions('all')">All</button>
@@ -361,7 +393,7 @@
                         <i class="fas fa-user-lock mr-1"></i> Jails
                     </button>
                 </div>
-                
+
                 <!-- Actions List -->
                 <div id="actionsList" class="space-y-3">
                     <div class="alert alert-info">
@@ -370,14 +402,14 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Moderate Section -->
             <div id="section-moderate" class="section-content p-8 hidden">
                 <div class="mb-6">
                     <h1 class="text-3xl font-bold mb-2">Quick Moderation</h1>
                     <p class="text-gray-400">Take quick moderation actions</p>
                 </div>
-                
+
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <!-- Warn Card -->
                     <div class="card bg-gray-800 border border-gray-700 shadow-xl">
@@ -388,11 +420,13 @@
                             </h2>
                             <div class="form-control">
                                 <label class="label"><span class="label-text">User ID</span></label>
-                                <input type="text" placeholder="Enter user ID" class="input input-bordered" id="warn-userId" />
+                                <input type="text" placeholder="Enter user ID" class="input input-bordered"
+                                    id="warn-userId" />
                             </div>
                             <div class="form-control">
                                 <label class="label"><span class="label-text">Reason</span></label>
-                                <textarea class="textarea textarea-bordered" placeholder="Warning reason" id="warn-reason"></textarea>
+                                <textarea class="textarea textarea-bordered" placeholder="Warning reason"
+                                    id="warn-reason"></textarea>
                             </div>
                             <div class="card-actions justify-end">
                                 <button class="btn btn-warning" onclick="moderateAction('warn')">
@@ -402,7 +436,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Mute Card -->
                     <div class="card bg-gray-800 border border-gray-700 shadow-xl">
                         <div class="card-body">
@@ -412,11 +446,13 @@
                             </h2>
                             <div class="form-control">
                                 <label class="label"><span class="label-text">User ID</span></label>
-                                <input type="text" placeholder="Enter user ID" class="input input-bordered" id="mute-userId" />
+                                <input type="text" placeholder="Enter user ID" class="input input-bordered"
+                                    id="mute-userId" />
                             </div>
                             <div class="form-control">
                                 <label class="label"><span class="label-text">Reason</span></label>
-                                <textarea class="textarea textarea-bordered" placeholder="Mute reason" id="mute-reason"></textarea>
+                                <textarea class="textarea textarea-bordered" placeholder="Mute reason"
+                                    id="mute-reason"></textarea>
                             </div>
                             <div class="card-actions justify-end">
                                 <button class="btn btn-info" onclick="moderateAction('mute')">
@@ -426,7 +462,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Kick Card -->
                     <div class="card bg-gray-800 border border-gray-700 shadow-xl">
                         <div class="card-body">
@@ -436,21 +472,24 @@
                             </h2>
                             <div class="form-control">
                                 <label class="label"><span class="label-text">User ID</span></label>
-                                <input type="text" placeholder="Enter user ID" class="input input-bordered" id="kick-userId" />
+                                <input type="text" placeholder="Enter user ID" class="input input-bordered"
+                                    id="kick-userId" />
                             </div>
                             <div class="form-control">
                                 <label class="label"><span class="label-text">Reason</span></label>
-                                <textarea class="textarea textarea-bordered" placeholder="Kick reason" id="kick-reason"></textarea>
+                                <textarea class="textarea textarea-bordered" placeholder="Kick reason"
+                                    id="kick-reason"></textarea>
                             </div>
                             <div class="card-actions justify-end">
-                                <button class="btn" style="background: #ff6b6b; color: white;" onclick="moderateAction('kick')">
+                                <button class="btn" style="background: #ff6b6b; color: white;"
+                                    onclick="moderateAction('kick')">
                                     <i class="fas fa-user-times mr-2"></i>
                                     Kick User
                                 </button>
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Ban Card -->
                     <div class="card bg-gray-800 border border-gray-700 shadow-xl">
                         <div class="card-body">
@@ -460,11 +499,13 @@
                             </h2>
                             <div class="form-control">
                                 <label class="label"><span class="label-text">User ID</span></label>
-                                <input type="text" placeholder="Enter user ID" class="input input-bordered" id="ban-userId" />
+                                <input type="text" placeholder="Enter user ID" class="input input-bordered"
+                                    id="ban-userId" />
                             </div>
                             <div class="form-control">
                                 <label class="label"><span class="label-text">Reason</span></label>
-                                <textarea class="textarea textarea-bordered" placeholder="Ban reason" id="ban-reason"></textarea>
+                                <textarea class="textarea textarea-bordered" placeholder="Ban reason"
+                                    id="ban-reason"></textarea>
                             </div>
                             <div class="card-actions justify-end">
                                 <button class="btn btn-error" onclick="moderateAction('ban')">
@@ -475,26 +516,26 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div id="moderateResult" class="mt-6"></div>
             </div>
-            
+
             <!-- Commands Management Section -->
             <div id="section-commands" class="section-content p-8 hidden">
                 <div class="mb-6">
                     <h1 class="text-3xl font-bold mb-2">Command Management</h1>
                     <p class="text-gray-400">Enable/disable commands and manage aliases for your server</p>
                 </div>
-                
+
                 <div class="alert alert-info mb-6">
                     <i class="fas fa-info-circle"></i>
                     <span>Select a server to manage command settings. Changes are per-server.</span>
                 </div>
-                
+
                 <!-- Search and Filter -->
                 <div class="flex gap-4 mb-6">
-                    <input type="text" id="commandSearch" placeholder="Search commands..." 
-                           class="input input-bordered flex-1" onkeyup="filterCommands()" />
+                    <input type="text" id="commandSearch" placeholder="Search commands..."
+                        class="input input-bordered flex-1" onkeyup="filterCommands()" />
                     <select id="categoryFilter" class="select select-bordered" onchange="filterCommands()">
                         <option value="all">All Categories</option>
                         <option value="moderation">Moderation</option>
@@ -504,7 +545,7 @@
                         <option value="voice">Voice</option>
                     </select>
                 </div>
-                
+
                 <!-- Commands List -->
                 <div id="commandsList" class="space-y-3">
                     <div class="text-center text-gray-500 py-8">
@@ -512,29 +553,29 @@
                         <p>Select a server to manage commands</p>
                     </div>
                 </div>
-                
+
                 <div class="mt-6">
                     <button class="btn btn-primary" onclick="saveCommandSettings()">
                         <i class="fas fa-save mr-2"></i>
                         Save Command Settings
                     </button>
                 </div>
-                
+
                 <div id="commands-result" class="mt-4"></div>
             </div>
-            
+
             <!-- Clan System Section -->
             <div id="section-clans" class="section-content p-8 hidden">
                 <div class="mb-6">
                     <h1 class="text-3xl font-bold mb-2">Clan System</h1>
                     <p class="text-gray-400">Enable and configure the clan management system</p>
                 </div>
-                
+
                 <div class="alert alert-info mb-6">
                     <i class="fas fa-info-circle"></i>
                     <span>Clans allow members to create private communities with dedicated channels and roles</span>
                 </div>
-                
+
                 <!-- Enable/Disable Clan System -->
                 <div class="card bg-gray-700 border border-gray-600 mb-6">
                     <div class="card-body p-4">
@@ -543,36 +584,42 @@
                                 <span class="label-text font-bold text-lg">Enable Clan System</span>
                                 <p class="text-sm text-gray-400 mt-1">Allow members to create and manage clans</p>
                             </div>
-                            <input type="checkbox" id="config-clanSystemEnabled" class="toggle toggle-lg toggle-success" />
+                            <input type="checkbox" id="config-clanSystemEnabled"
+                                class="toggle toggle-lg toggle-success" />
                         </label>
                     </div>
                 </div>
-                
+
                 <!-- Clan Configuration -->
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <div class="form-control">
                         <label class="label">
                             <span class="label-text font-bold">Text Channels Category ID</span>
                         </label>
-                        <input type="text" id="config-clanTextCategoryId" placeholder="Category ID for clan text channels" class="input input-bordered bg-gray-800" />
+                        <input type="text" id="config-clanTextCategoryId"
+                            placeholder="Category ID for clan text channels" class="input input-bordered bg-gray-800" />
                         <label class="label">
-                            <span class="label-text-alt text-gray-500">Create a category for clan text channels and paste its ID here</span>
+                            <span class="label-text-alt text-gray-500">Create a category for clan text channels and
+                                paste its ID here</span>
                         </label>
                     </div>
-                    
+
                     <div class="form-control">
                         <label class="label">
                             <span class="label-text font-bold">Voice Channels Category ID</span>
                         </label>
-                        <input type="text" id="config-clanVoiceCategoryId" placeholder="Category ID for clan voice channels" class="input input-bordered bg-gray-800" />
+                        <input type="text" id="config-clanVoiceCategoryId"
+                            placeholder="Category ID for clan voice channels"
+                            class="input input-bordered bg-gray-800" />
                         <label class="label">
-                            <span class="label-text-alt text-gray-500">Create a category for clan voice channels and paste its ID here</span>
+                            <span class="label-text-alt text-gray-500">Create a category for clan voice channels and
+                                paste its ID here</span>
                         </label>
                     </div>
                 </div>
-                
+
                 <div class="divider"></div>
-                
+
                 <!-- Clan Commands Info -->
                 <div class="card bg-gray-800 border border-gray-700">
                     <div class="card-body">
@@ -582,7 +629,8 @@
                             <div>
                                 <h4 class="font-semibold text-blue-400 mb-2">👑 Leader Commands</h4>
                                 <ul class="text-sm space-y-1 text-gray-300">
-                                    <li><code>&createclan &lt;name&gt; &lt;@user&gt;</code> - Create clan (Admin only)</li>
+                                    <li><code>&createclan &lt;name&gt; &lt;@user&gt;</code> - Create clan (Admin only)
+                                    </li>
                                     <li><code>&settag &lt;tag&gt;</code> - Set clan tag</li>
                                     <li><code>&deleteclan confirm</code> - Delete your clan</li>
                                     <li><code>&addtag &lt;@member&gt;</code> - Add tag to nickname</li>
@@ -594,14 +642,16 @@
                                     <li><code>&dmclan &lt;message&gt;</code> - DM all members</li>
                                     <li><code>&moveclan</code> - Move all to your VC</li>
                                     <li><code>&clanmembers</code> - Get member list (DM)</li>
-                                    <li><code>&allow &lt;user/role/leader&gt; &lt;@/id&gt;</code> - Grant permissions</li>
-                                    <li><code>&deny &lt;user/role/leader&gt; &lt;@/id&gt;</code> - Remove permissions</li>
+                                    <li><code>&allow &lt;user/role/leader&gt; &lt;@/id&gt;</code> - Grant permissions
+                                    </li>
+                                    <li><code>&deny &lt;user/role/leader&gt; &lt;@/id&gt;</code> - Remove permissions
+                                    </li>
                                     <li><code>&lock</code> / <code>&unlock</code> - Lock/unlock chat</li>
                                     <li><code>&mute &lt;@member&gt;</code> / <code>&unmute</code> - Mute/unmute</li>
                                     <li><code>&reset &lt;@member&gt;</code> - Reset permissions</li>
                                 </ul>
                             </div>
-                            
+
                             <!-- Co-Leader Commands -->
                             <div>
                                 <h4 class="font-semibold text-green-400 mb-2">⭐ Co-Leader Commands</h4>
@@ -611,14 +661,16 @@
                                     <li><code>&add &lt;@user/id&gt;</code> - Add member</li>
                                     <li><code>&remove &lt;@user/id&gt;</code> - Remove member</li>
                                     <li><code>&clanmembers</code> - Get member list (DM)</li>
-                                    <li><code>&allow &lt;user/role/leader&gt; &lt;@/id&gt;</code> - Grant permissions</li>
-                                    <li><code>&deny &lt;user/role/leader&gt; &lt;@/id&gt;</code> - Remove permissions</li>
+                                    <li><code>&allow &lt;user/role/leader&gt; &lt;@/id&gt;</code> - Grant permissions
+                                    </li>
+                                    <li><code>&deny &lt;user/role/leader&gt; &lt;@/id&gt;</code> - Remove permissions
+                                    </li>
                                     <li><code>&lock</code> / <code>&unlock</code> - Lock/unlock chat</li>
                                     <li><code>&mute &lt;@member&gt;</code> / <code>&unmute</code> - Mute/unmute</li>
                                     <li><code>&reset &lt;@member&gt;</code> - Reset permissions</li>
                                 </ul>
                             </div>
-                            
+
                             <!-- Member Commands -->
                             <div>
                                 <h4 class="font-semibold text-purple-400 mb-2">👥 Member Commands</h4>
@@ -632,30 +684,31 @@
                                 </ul>
                             </div>
                         </div>
-                        
+
                         <div class="mt-4 p-4 bg-gray-900 rounded-lg">
-                            <p class="text-sm text-yellow-400"><i class="fas fa-info-circle"></i> <strong>Note:</strong> All clan commands must be used within the designated clan categories.</p>
+                            <p class="text-sm text-yellow-400"><i class="fas fa-info-circle"></i> <strong>Note:</strong>
+                                All clan commands must be used within the designated clan categories.</p>
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="mt-6">
                     <button class="btn btn-primary" onclick="saveConfig('main')">
                         <i class="fas fa-save mr-2"></i>
                         Save Clan Settings
                     </button>
                 </div>
-                
+
                 <div id="clan-result" class="mt-4"></div>
             </div>
-            
+
             <!-- Embed Builder Section -->
             <div id="section-embed-builder" class="section-content p-8 hidden">
                 <div class="mb-6">
                     <h1 class="text-3xl font-bold mb-2">Embed Message Builder</h1>
                     <p class="text-gray-400">Create and send beautiful embed messages to any channel</p>
                 </div>
-                
+
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <!-- Builder Side -->
                     <div class="space-y-4">
@@ -666,19 +719,22 @@
                                 <option value="">Select a channel...</option>
                             </select>
                         </div>
-                        
+
                         <!-- Author -->
                         <div class="card bg-gray-700">
                             <div class="card-body p-4">
                                 <h3 class="font-bold mb-3">Author</h3>
                                 <div class="space-y-2">
-                                    <input type="text" id="embed-author-name" placeholder="Author Name" class="input input-sm input-bordered w-full" />
-                                    <input type="url" id="embed-author-icon" placeholder="Author Icon URL" class="input input-sm input-bordered w-full" />
-                                    <input type="url" id="embed-author-url" placeholder="Author Link URL" class="input input-sm input-bordered w-full" />
+                                    <input type="text" id="embed-author-name" placeholder="Author Name"
+                                        class="input input-sm input-bordered w-full" />
+                                    <input type="url" id="embed-author-icon" placeholder="Author Icon URL"
+                                        class="input input-sm input-bordered w-full" />
+                                    <input type="url" id="embed-author-url" placeholder="Author Link URL"
+                                        class="input input-sm input-bordered w-full" />
                                 </div>
                             </div>
                         </div>
-                        
+
                         <!-- Sender Options -->
                         <div class="card bg-gray-700">
                             <div class="card-body p-4">
@@ -686,65 +742,79 @@
                                 <div class="space-y-2">
                                     <label class="label cursor-pointer">
                                         <span class="label-text">Send as Bot</span>
-                                        <input type="radio" name="sender-type" value="bot" class="radio radio-primary" checked onchange="toggleSenderType()" />
+                                        <input type="radio" name="sender-type" value="bot" class="radio radio-primary"
+                                            checked onchange="toggleSenderType()" />
                                     </label>
                                     <label class="label cursor-pointer">
                                         <span class="label-text">Send as Webhook (Custom Name/Avatar)</span>
-                                        <input type="radio" name="sender-type" value="webhook" class="radio radio-primary" onchange="toggleSenderType()" />
+                                        <input type="radio" name="sender-type" value="webhook"
+                                            class="radio radio-primary" onchange="toggleSenderType()" />
                                     </label>
                                     <div id="webhook-options" class="space-y-2 hidden">
-                                        <input type="text" id="webhook-username" placeholder="Custom Username" class="input input-sm input-bordered w-full" />
-                                        <input type="url" id="webhook-avatar" placeholder="Custom Avatar URL" class="input input-sm input-bordered w-full" />
+                                        <input type="text" id="webhook-username" placeholder="Custom Username"
+                                            class="input input-sm input-bordered w-full" />
+                                        <input type="url" id="webhook-avatar" placeholder="Custom Avatar URL"
+                                            class="input input-sm input-bordered w-full" />
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        
+
                         <!-- Title & Description -->
                         <div class="form-control">
                             <label class="label"><span class="label-text font-bold">Title</span></label>
-                            <input type="text" id="embed-title" placeholder="Embed Title" class="input input-bordered bg-gray-800" />
+                            <input type="text" id="embed-title" placeholder="Embed Title"
+                                class="input input-bordered bg-gray-800" />
                         </div>
-                        
+
                         <div class="form-control">
                             <label class="label"><span class="label-text font-bold">Description</span></label>
-                            <textarea id="embed-description" placeholder="Embed Description" class="textarea textarea-bordered bg-gray-800 h-32"></textarea>
+                            <textarea id="embed-description" placeholder="Embed Description"
+                                class="textarea textarea-bordered bg-gray-800 h-32"></textarea>
                         </div>
-                        
+
                         <!-- Color -->
                         <div class="form-control">
                             <label class="label"><span class="label-text font-bold">Color</span></label>
                             <div class="flex gap-2">
-                                <input type="color" id="embed-color" value="#5865F2" class="w-16 h-10 rounded cursor-pointer" />
-                                <input type="text" id="embed-color-hex" value="#5865F2" class="input input-bordered bg-gray-800 flex-1" placeholder="#5865F2" />
+                                <input type="color" id="embed-color" value="#5865F2"
+                                    class="w-16 h-10 rounded cursor-pointer" />
+                                <input type="text" id="embed-color-hex" value="#5865F2"
+                                    class="input input-bordered bg-gray-800 flex-1" placeholder="#5865F2" />
                             </div>
                         </div>
-                        
+
                         <!-- URL -->
                         <div class="form-control">
                             <label class="label"><span class="label-text font-bold">URL (Title Link)</span></label>
-                            <input type="url" id="embed-url" placeholder="https://example.com" class="input input-bordered bg-gray-800" />
+                            <input type="url" id="embed-url" placeholder="https://example.com"
+                                class="input input-bordered bg-gray-800" />
                         </div>
-                        
+
                         <!-- Thumbnail & Image -->
                         <div class="card bg-gray-700">
                             <div class="card-body p-4">
                                 <h3 class="font-bold mb-3">Media</h3>
                                 <div class="space-y-2">
-                                    <input type="url" id="embed-thumbnail" placeholder="Thumbnail URL" class="input input-sm input-bordered w-full" />
-                                    <input type="url" id="embed-image" placeholder="Image URL" class="input input-sm input-bordered w-full" />
-                                    <input type="url" id="embed-video" placeholder="Video URL" class="input input-sm input-bordered w-full" />
+                                    <input type="url" id="embed-thumbnail" placeholder="Thumbnail URL"
+                                        class="input input-sm input-bordered w-full" />
+                                    <input type="url" id="embed-image" placeholder="Image URL"
+                                        class="input input-sm input-bordered w-full" />
+                                    <input type="url" id="embed-video" placeholder="Video URL"
+                                        class="input input-sm input-bordered w-full" />
                                 </div>
                             </div>
                         </div>
-                        
+
                         <!-- Footer -->
                         <div class="card bg-gray-700">
                             <div class="card-body p-4">
                                 <h3 class="font-bold mb-3">Footer</h3>
                                 <div class="space-y-2">
-                                    <input type="text" id="embed-footer-text" placeholder="Footer Text" class="input input-sm input-bordered w-full" />
-                                    <input type="url" id="embed-footer-icon" placeholder="Footer Icon URL" class="input input-sm input-bordered w-full" />
+                                    <input type="text" id="embed-footer-text" placeholder="Footer Text"
+                                        class="input input-sm input-bordered w-full" />
+                                    <input type="url" id="embed-footer-icon" placeholder="Footer Icon URL"
+                                        class="input input-sm input-bordered w-full" />
                                     <label class="label cursor-pointer">
                                         <span class="label-text">Include Timestamp</span>
                                         <input type="checkbox" id="embed-timestamp" class="checkbox checkbox-primary" />
@@ -752,7 +822,7 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                         <!-- Fields -->
                         <div class="card bg-gray-700">
                             <div class="card-body p-4">
@@ -763,22 +833,23 @@
                                 </button>
                             </div>
                         </div>
-                        
+
                         <!-- Send Button -->
                         <button class="btn btn-primary btn-lg w-full" onclick="sendEmbed()">
                             <i class="fas fa-paper-plane mr-2"></i>
                             Send Embed Message
                         </button>
-                        
+
                         <div id="embed-result" class="mt-4"></div>
                     </div>
-                    
+
                     <!-- Preview Side -->
                     <div>
                         <div class="sticky top-4">
                             <h3 class="text-xl font-bold mb-4">Live Preview</h3>
                             <div class="bg-gray-800 rounded-lg p-4">
-                                <div id="embed-preview" class="bg-gray-900 rounded-lg p-4" style="border-left: 4px solid #5865F2;">
+                                <div id="embed-preview" class="bg-gray-900 rounded-lg p-4"
+                                    style="border-left: 4px solid #5865F2;">
                                     <div class="text-gray-400 text-center py-8">
                                         <i class="fas fa-eye text-4xl mb-2 opacity-30"></i>
                                         <p>Start building your embed to see preview</p>
@@ -789,19 +860,19 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Main Config Section -->
             <div id="section-main-config" class="section-content p-8 hidden">
                 <div class="mb-6">
                     <h1 class="text-3xl font-bold mb-2">Main Configuration</h1>
                     <p class="text-gray-400">Configure core bot settings</p>
                 </div>
-                
+
                 <div class="alert alert-info mb-6">
                     <i class="fas fa-info-circle"></i>
                     <span>Please select a server first to load guild-specific configuration</span>
                 </div>
-                
+
                 <div id="config-fields" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <!-- Config fields will be populated when a server is selected -->
                     <div class="col-span-2 text-center text-gray-500 py-8">
@@ -809,29 +880,29 @@
                         <p>Select a server from the sidebar to view and edit configuration</p>
                     </div>
                 </div>
-                
+
                 <div class="mt-6">
                     <button class="btn btn-primary" onclick="saveConfig('main')">
                         <i class="fas fa-save mr-2"></i>
                         Save Configuration
                     </button>
                 </div>
-                
+
                 <div id="config-result" class="mt-4"></div>
             </div>
-            
+
             <!-- Messages Config Section -->
             <div id="section-messages-config" class="section-content p-8 hidden">
                 <div class="mb-6">
                     <h1 class="text-3xl font-bold mb-2">Messages Configuration</h1>
                     <p class="text-gray-400">Customize welcome and leave messages</p>
                 </div>
-                
+
                 <div class="alert alert-info mb-6">
                     <i class="fas fa-info-circle"></i>
                     <span>Use placeholders: {user}, {server}, {memberCount}</span>
                 </div>
-                
+
                 <div class="space-y-6">
                     <!-- Welcome Message -->
                     <div class="card bg-gray-800 border border-gray-700">
@@ -845,11 +916,12 @@
                             </div>
                             <div class="form-control">
                                 <label class="label"><span class="label-text">Welcome Message</span></label>
-                                <textarea class="textarea textarea-bordered h-24" placeholder="Welcome to {server}, {user}!"></textarea>
+                                <textarea class="textarea textarea-bordered h-24"
+                                    placeholder="Welcome to {server}, {user}!"></textarea>
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Leave Message -->
                     <div class="card bg-gray-800 border border-gray-700">
                         <div class="card-body">
@@ -862,12 +934,13 @@
                             </div>
                             <div class="form-control">
                                 <label class="label"><span class="label-text">Leave Message</span></label>
-                                <textarea class="textarea textarea-bordered h-24" placeholder="{user} has left the server"></textarea>
+                                <textarea class="textarea textarea-bordered h-24"
+                                    placeholder="{user} has left the server"></textarea>
                             </div>
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="mt-6">
                     <button class="btn btn-primary">
                         <i class="fas fa-save mr-2"></i>
@@ -875,55 +948,55 @@
                     </button>
                 </div>
             </div>
-            
+
             <!-- Verification Config Section -->
             <div id="section-verification-config" class="section-content p-8 hidden">
                 <div class="mb-6">
                     <h1 class="text-3xl font-bold mb-2">Verification Configuration</h1>
                     <p class="text-gray-400">Configure user verification settings</p>
                 </div>
-                
+
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <% if (config.verification && config.keys.verification) { %>
                         <% config.keys.verification.forEach(function(key) { %>
                             <div class="form-control">
                                 <label class="label">
-                                    <span class="label-text font-medium"><%= key %></span>
+                                    <span class="label-text font-medium">
+                                        <%= key %>
+                                    </span>
                                 </label>
-                                <input type="text" 
-                                       placeholder="<%= key %>" 
-                                       class="input input-bordered bg-gray-800" 
-                                       id="vconfig-<%= key %>"
-                                       value="<%= config.verification[key] %>" />
+                                <input type="text" placeholder="<%= key %>" class="input input-bordered bg-gray-800"
+                                    id="vconfig-<%= key %>" value="<%= config.verification[key] %>" />
                             </div>
-                        <% }); %>
-                    <% } else { %>
-                        <div class="col-span-2">
-                            <div class="alert alert-warning">
-                                <i class="fas fa-exclamation-triangle"></i>
-                                <span>Verification config not found. Create verification-config.js to enable this feature.</span>
-                            </div>
-                        </div>
-                    <% } %>
+                            <% }); %>
+                                <% } else { %>
+                                    <div class="col-span-2">
+                                        <div class="alert alert-warning">
+                                            <i class="fas fa-exclamation-triangle"></i>
+                                            <span>Verification config not found. Create verification-config.js to enable
+                                                this feature.</span>
+                                        </div>
+                                    </div>
+                                    <% } %>
                 </div>
-                
+
                 <div class="mt-6">
                     <button class="btn btn-primary" onclick="saveConfig('verification')">
                         <i class="fas fa-save mr-2"></i>
                         Save Verification Config
                     </button>
                 </div>
-                
+
                 <div id="vconfig-result" class="mt-4"></div>
             </div>
-            
+
             <!-- Advanced Config Section -->
             <div id="section-advanced-config" class="section-content p-8 hidden">
                 <div class="mb-6">
                     <h1 class="text-3xl font-bold mb-2">Advanced Configuration</h1>
                     <p class="text-gray-400">Advanced bot settings and features</p>
                 </div>
-                
+
                 <div class="alert alert-warning">
                     <i class="fas fa-exclamation-triangle"></i>
                     <div>
@@ -931,7 +1004,7 @@
                         <div class="text-xs">Modifying advanced settings may affect bot functionality</div>
                     </div>
                 </div>
-                
+
                 <div class="mt-6 space-y-4">
                     <div class="form-control">
                         <label class="label cursor-pointer">
@@ -958,7 +1031,7 @@
                         </label>
                     </div>
                 </div>
-                
+
                 <div class="mt-6">
                     <button class="btn btn-primary">
                         <i class="fas fa-save mr-2"></i>
@@ -966,7 +1039,7 @@
                     </button>
                 </div>
             </div>
-            
+
         </div>
     </div>
 
@@ -976,67 +1049,67 @@
         let currentGuildId = null; // Track currently selected guild
         let allCommands = []; // Store all commands
         let guildCommandSettings = { disabledCommands: [], commandAliases: {} };
-        
+
         // Show/Hide Sections
         function showSection(sectionName) {
             document.querySelectorAll('.section-content').forEach(section => {
                 section.classList.add('hidden');
             });
             document.getElementById(`section-${sectionName}`).classList.remove('hidden');
-            
+
             // Update active menu item
             document.querySelectorAll('.menu a').forEach(link => {
                 link.classList.remove('active');
             });
             event.target.closest('a').classList.add('active');
-            
+
             // Load section-specific data
             if (sectionName === 'modactions') {
                 loadModActions();
             }
         }
-        
+
         // Select Server
         async function selectServer(serverId, serverName) {
             currentGuildId = serverId;
             document.getElementById('currentServerName').textContent = serverName;
-            
+
             // Update active server - properly toggle classes
             document.querySelectorAll('.server-btn').forEach(btn => {
                 btn.classList.remove('active');
             });
             event.target.closest('.server-btn').classList.add('active');
-            
+
             console.log('Selected server:', serverId);
-            
+
             // Load guild-specific data
             await loadGuildData(serverId);
         }
-        
+
         // Load Guild-Specific Data
         async function loadGuildData(guildId) {
             try {
                 // Load stats
                 const statsResponse = await fetch(`/api/stats/${guildId}`);
                 const statsData = await statsResponse.json();
-                
+
                 // Update stats display
                 document.getElementById('warnedCount').textContent = statsData.warnedUsers;
                 document.getElementById('jailedCount').textContent = statsData.jailedUsers;
-                
+
                 // Load configuration
                 const configResponse = await fetch(`/api/config/${guildId}`);
                 const configData = await configResponse.json();
-                
+
                 // Update config fields
                 updateConfigFields(configData);
-                
+
                 // Load command settings
                 await loadCommandSettings(guildId);
-                
+
                 // Load channels for embed builder
                 await loadGuildChannels(guildId);
-                
+
                 // Show success notification
                 document.getElementById('recentActivity').innerHTML = `
                     <div class="alert alert-success">
@@ -1044,7 +1117,7 @@
                         <span>Loaded data for ${document.getElementById('currentServerName').textContent}</span>
                     </div>
                 `;
-                
+
             } catch (error) {
                 console.error('Failed to load guild data:', error);
                 document.getElementById('recentActivity').innerHTML = `
@@ -1055,12 +1128,12 @@
                 `;
             }
         }
-        
+
         // Update Config Fields
         function updateConfigFields(data) {
             const guildConfig = data.guildConfig || {};
             const mainConfig = data.mainConfig || {};
-            
+
             // Update clan-specific fields
             if (guildConfig.clanSystemEnabled !== undefined) {
                 const clanToggle = document.getElementById('config-clanSystemEnabled');
@@ -1068,54 +1141,81 @@
                     clanToggle.checked = guildConfig.clanSystemEnabled;
                 }
             }
-            
+
             if (guildConfig.clanTextCategoryId !== undefined) {
                 const textCategoryInput = document.getElementById('config-clanTextCategoryId');
                 if (textCategoryInput) {
                     textCategoryInput.value = guildConfig.clanTextCategoryId;
                 }
             }
-            
+
             if (guildConfig.clanVoiceCategoryId !== undefined) {
                 const voiceCategoryInput = document.getElementById('config-clanVoiceCategoryId');
                 if (voiceCategoryInput) {
                     voiceCategoryInput.value = guildConfig.clanVoiceCategoryId;
                 }
             }
-            
+
             // Update other config fields dynamically (excluding clan fields)
             const configContainer = document.getElementById('config-fields');
-            
+
             // Clear existing fields by removing all child elements
             while (configContainer.firstChild) {
                 configContainer.removeChild(configContainer.firstChild);
             }
-            
+
             // Combine main config and guild config, prioritizing guild config values
             const combinedConfig = { ...mainConfig, ...guildConfig };
-            
+
+            // Filter out sensitive and clan fields
             // Filter out sensitive and clan fields
             const sensitiveKeys = ['DISCORD_TOKEN', 'CLIENT_ID'];
             const clanFieldKeys = ['clanSystemEnabled', 'clanTextCategoryId', 'clanVoiceCategoryId'];
-            const excludedKeys = [...sensitiveKeys, ...clanFieldKeys];
-            
+
+            // Keys handled by other dedicated sections
+            const messageKeys = ['WELCOME_MESSAGE', 'LEAVE_MESSAGE', 'MEMBER_JOIN_LOG_CHANNEL_ID', 'MEMBER_LEAVE_LOG_CHANNEL_ID'];
+            const logChannelKeys = [
+                'JAIL_LOG_CHANNEL_ID', 'WARN_LOG_CHANNEL_ID', 'MUTE_LOG_CHANNEL_ID',
+                'BAN_LOG_CHANNEL_ID', 'KICK_LOG_CHANNEL_ID', 'UNBAN_LOG_CHANNEL_ID',
+                'NICKNAME_LOG_CHANNEL_ID', 'VOICE_MOD_LOG_CHANNEL_ID', 'MOVE_LOG_CHANNEL_ID',
+                'RANK_LOG_CHANNEL_ID'
+            ];
+            const roleKeys = [
+                'MODERATOR_ROLES', 'ADMIN_ROLES', 'VOICE_MODERATOR_ROLES', 'RANK_ADMIN_ROLES',
+                'WARN_ROLE_ID', 'JAIL_ROLE_ID', 'MUTED_ROLE_ID',
+                'TRIAL_STAFF_ROLE_ID', 'STAFF_ROLE_ID', 'MODERATOR_ROLE_ID', 'HEAD_MODERATOR_ROLE_ID',
+                'MANAGER_ROLE_ID', 'HEAD_MANAGER_ROLE_ID', 'ADMINISTRATOR_ROLE_ID'
+            ];
+            const advancedKeys = ['TEMP_ROOMS_CATEGORY_ID', 'PREFIX'];
+            const otherHandledKeys = ['DASHBOARD_URL', 'DASHBOARD_PORT'];
+
+            const excludedKeys = [
+                ...sensitiveKeys,
+                ...clanFieldKeys,
+                ...messageKeys,
+                ...logChannelKeys,
+                ...roleKeys,
+                ...advancedKeys,
+                ...otherHandledKeys
+            ];
+
             const configFields = Object.keys(combinedConfig).filter(key => !excludedKeys.includes(key));
-            
+
             const isArrayField = (key, value) => {
                 return Array.isArray(value) || key.toLowerCase().includes('role') && !key.toLowerCase().includes('id');
             };
-            
+
             // Create document fragment for better performance
             const fragment = document.createDocumentFragment();
-            
+
             configFields.forEach(key => {
                 let value = combinedConfig[key];
-                
+
                 // Format label (convert camelCase to Title Case)
                 const label = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
-                
+
                 let fieldElement;
-                
+
                 // Bot Enabled toggle
                 if (key === 'botEnabled') {
                     fieldElement = document.createElement('div');
@@ -1145,7 +1245,7 @@
                             <span class="tag-chip-remove" onclick="removeTag(this)">&times;</span>
                         </span>
                     `).join('');
-                    
+
                     fieldElement = document.createElement('div');
                     fieldElement.className = 'form-control';
                     fieldElement.innerHTML = `
@@ -1179,13 +1279,13 @@
                                value="${value || ''}" />
                     `;
                 }
-                
+
                 fragment.appendChild(fieldElement);
             });
-            
+
             configContainer.appendChild(fragment);
         }
-        
+
         // Handle tag input
         function handleTagInput(event, input) {
             if (event.key === 'Enter' && input.value.trim()) {
@@ -1193,7 +1293,7 @@
                 const container = input.closest('.tag-input-container');
                 const fieldKey = container.dataset.field;
                 const value = input.value.trim();
-                
+
                 // Create chip
                 const chip = document.createElement('span');
                 chip.className = 'tag-chip';
@@ -1201,16 +1301,16 @@
                     ${value}
                     <span class="tag-chip-remove" onclick="removeTag(this)">&times;</span>
                 `;
-                
+
                 // Insert before input
                 container.insertBefore(chip, input);
                 input.value = '';
-                
+
                 // Update hidden input
                 updateTagsValue(container, fieldKey);
             }
         }
-        
+
         // Remove tag
         function removeTag(removeBtn) {
             const chip = removeBtn.parentElement;
@@ -1219,7 +1319,7 @@
             chip.remove();
             updateTagsValue(container, fieldKey);
         }
-        
+
         // Update hidden input value
         function updateTagsValue(container, fieldKey) {
             const chips = container.querySelectorAll('.tag-chip');
@@ -1229,19 +1329,19 @@
                 hiddenInput.value = values.join(',');
             }
         }
-        
+
         // Focus tag input
         function focusTagInput(container) {
             const input = container.querySelector('.tag-input');
             if (input) input.focus();
         }
-        
+
         // Load Moderation Actions
         async function loadModActions() {
             try {
                 const response = await fetch('/api/modactions');
                 const data = await response.json();
-                
+
                 if (data.actions && data.actions.length > 0) {
                     displayActions(data.actions);
                 } else {
@@ -1256,11 +1356,11 @@
                 console.error('Failed to load mod actions:', error);
             }
         }
-        
+
         // Display Actions
         function displayActions(actions) {
             const filtered = currentFilter === 'all' ? actions : actions.filter(a => a.action.toLowerCase() === currentFilter);
-            
+
             const actionColors = {
                 'warning': 'border-l-warning',
                 'mute': 'border-l-info',
@@ -1268,7 +1368,7 @@
                 'ban': 'border-l-error',
                 'jail': 'border-l-purple-500'
             };
-            
+
             const actionIcons = {
                 'warning': 'fa-exclamation-triangle',
                 'mute': 'fa-volume-mute',
@@ -1276,7 +1376,7 @@
                 'ban': 'fa-ban',
                 'jail': 'fa-user-lock'
             };
-            
+
             const html = filtered.map(action => `
                 <div class="card bg-gray-800 border-l-4 ${actionColors[action.action.toLowerCase()] || 'border-l-primary'}">
                     <div class="card-body p-4">
@@ -1301,7 +1401,7 @@
                     </div>
                 </div>
             `).join('');
-            
+
             document.getElementById('actionsList').innerHTML = html || `
                 <div class="alert alert-info">
                     <i class="fas fa-filter"></i>
@@ -1309,12 +1409,12 @@
                 </div>
             `;
         }
-        
+
         // Filter Actions
         function filterActions(filter) {
             currentFilter = filter;
             loadModActions();
-            
+
             // Update filter buttons
             document.querySelectorAll('.btn-sm').forEach(btn => {
                 btn.classList.remove('btn-primary');
@@ -1323,27 +1423,27 @@
             event.target.classList.remove('btn-outline');
             event.target.classList.add('btn-primary');
         }
-        
+
         // Moderation Actions
         async function moderateAction(action) {
             const userId = document.getElementById(`${action}-userId`).value;
             const reason = document.getElementById(`${action}-reason`).value;
-            
+
             if (!userId) {
                 showResult('moderateResult', 'Please enter a user ID', 'error');
                 return;
             }
-            
+
             try {
                 const response = await fetch(`/api/moderate/${action}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ userId, reason })
                 });
-                
+
                 const data = await response.json();
                 showResult('moderateResult', data.message, data.success ? 'success' : 'error');
-                
+
                 if (data.success) {
                     document.getElementById(`${action}-userId`).value = '';
                     document.getElementById(`${action}-reason`).value = '';
@@ -1352,50 +1452,50 @@
                 showResult('moderateResult', 'Failed to perform action', 'error');
             }
         }
-        
+
         // Save Config
         async function saveConfig(type) {
             if (!currentGuildId) {
                 showResult('config-result', 'Please select a server first', 'error');
                 return;
             }
-            
+
             const configData = {};
-            
+
             // Handle clan section specifically
             if (type === 'main') {
                 // Get clan-specific fields
                 const clanSystemEnabled = document.getElementById('config-clanSystemEnabled');
                 const clanTextCategoryId = document.getElementById('config-clanTextCategoryId');
                 const clanVoiceCategoryId = document.getElementById('config-clanVoiceCategoryId');
-                
+
                 if (clanSystemEnabled) {
                     configData.clanSystemEnabled = clanSystemEnabled.checked;
                 }
-                
+
                 if (clanTextCategoryId) {
                     configData.clanTextCategoryId = clanTextCategoryId.value;
                 }
-                
+
                 if (clanVoiceCategoryId) {
                     configData.clanVoiceCategoryId = clanVoiceCategoryId.value;
                 }
             }
-            
+
             // Get other config fields
             const prefix = 'config-';
-            
+
             document.querySelectorAll(`[id^="${prefix}"]`).forEach(input => {
                 // Skip clan fields as they're handled above
-                if (input.id === 'config-clanSystemEnabled' || 
-                    input.id === 'config-clanTextCategoryId' || 
+                if (input.id === 'config-clanSystemEnabled' ||
+                    input.id === 'config-clanTextCategoryId' ||
                     input.id === 'config-clanVoiceCategoryId') {
                     return;
                 }
-                
+
                 const key = input.id.replace(prefix, '');
                 let value;
-                
+
                 // Handle checkboxes (like botEnabled)
                 if (input.type === 'checkbox') {
                     value = input.checked;
@@ -1418,47 +1518,47 @@
                         }
                     }
                 }
-                
+
                 configData[key] = value;
             });
-            
+
             try {
                 const response = await fetch(`/api/config/${currentGuildId}/update`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ config: configData })
                 });
-                
+
                 const data = await response.json();
                 showResult('config-result', data.message + ' (Live update applied)', data.success ? 'success' : 'error');
             } catch (error) {
                 showResult('config-result', 'Failed to save configuration', 'error');
             }
         }
-        
+
         // Show Result Message
         function showResult(elementId, message, type) {
             const alertClass = type === 'success' ? 'alert-success' : 'alert-error';
             const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
-            
+
             document.getElementById(elementId).innerHTML = `
                 <div class="alert ${alertClass}">
                     <i class="fas ${icon}"></i>
                     <span>${message}</span>
                 </div>
             `;
-            
+
             setTimeout(() => {
                 document.getElementById(elementId).innerHTML = '';
             }, 5000);
         }
-        
+
         // WebSocket - Live Stats Updates
         socket.on('statsUpdate', (stats) => {
             document.getElementById('warnedCount').textContent = stats.warnedUsers;
             document.getElementById('jailedCount').textContent = stats.jailedUsers;
         });
-        
+
         // Load All Commands
         async function loadAllCommands() {
             try {
@@ -1469,7 +1569,7 @@
                 console.error('Failed to load commands:', error);
             }
         }
-        
+
         // Load Command Settings for Guild
         async function loadCommandSettings(guildId) {
             try {
@@ -1481,20 +1581,20 @@
                 console.error('Failed to load command settings:', error);
             }
         }
-        
+
         // Display Commands
         function displayCommands() {
             if (allCommands.length === 0 || !currentGuildId) {
                 return;
             }
-            
+
             const commandsList = document.getElementById('commandsList');
-            
+
             const html = allCommands.map(cmd => {
                 const isDisabled = guildCommandSettings.disabledCommands.includes(cmd.name);
                 const aliases = guildCommandSettings.commandAliases[cmd.name] || [];
                 const aliasesStr = Array.isArray(aliases) ? aliases.join(', ') : '';
-                
+
                 const categoryColors = {
                     'moderation': 'badge-warning',
                     'admin': 'badge-error',
@@ -1502,7 +1602,7 @@
                     'utility': 'badge-success',
                     'voice': 'badge-accent'
                 };
-                
+
                 return `
                     <div class="card bg-gray-800 border border-gray-700 command-item" data-command="${cmd.name}" data-category="${cmd.category}">
                         <div class="card-body p-4">
@@ -1547,10 +1647,10 @@
                     </div>
                 `;
             }).join('');
-            
+
             commandsList.innerHTML = html;
         }
-        
+
         // Toggle Command
         function toggleCommand(commandName, enabled) {
             if (enabled) {
@@ -1563,26 +1663,26 @@
                 }
             }
         }
-        
+
         // Update Alias
         function updateAlias(commandName, aliasValue) {
             const aliases = aliasValue.split(',').map(a => a.trim()).filter(a => a);
             guildCommandSettings.commandAliases[commandName] = aliases;
         }
-        
+
         // Filter Commands
         function filterCommands() {
             const searchTerm = document.getElementById('commandSearch').value.toLowerCase();
             const category = document.getElementById('categoryFilter').value;
-            
+
             const commandItems = document.querySelectorAll('.command-item');
             commandItems.forEach(item => {
                 const commandName = item.dataset.command.toLowerCase();
                 const commandCategory = item.dataset.category;
-                
+
                 const matchesSearch = commandName.includes(searchTerm);
                 const matchesCategory = category === 'all' || commandCategory === category;
-                
+
                 if (matchesSearch && matchesCategory) {
                     item.style.display = 'block';
                 } else {
@@ -1590,14 +1690,14 @@
                 }
             });
         }
-        
+
         // Save Command Settings
         async function saveCommandSettings() {
             if (!currentGuildId) {
                 showResult('commands-result', 'Please select a server first', 'error');
                 return;
             }
-            
+
             // Collect aliases from hidden inputs
             const aliasInputs = document.querySelectorAll('[id^="alias-"]');
             aliasInputs.forEach(input => {
@@ -1606,86 +1706,89 @@
                 const aliases = aliasValue.split(',').map(a => a.trim()).filter(a => a);
                 guildCommandSettings.commandAliases[commandName] = aliases;
             });
-            
+
             try {
                 const response = await fetch(`/api/commands/${currentGuildId}/update`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(guildCommandSettings)
                 });
-                
+
                 const data = await response.json();
                 showResult('commands-result', data.message, data.success ? 'success' : 'error');
             } catch (error) {
                 showResult('commands-result', 'Failed to save command settings', 'error');
             }
         }
-        
+
         // Initial load
         document.addEventListener('DOMContentLoaded', () => {
             loadModActions();
             loadAllCommands();
             setupEmbedBuilder();
         });
-        
+
         // Embed Builder Functions
         let embedFields = [];
         let guildChannels = [];
-        
+
         // Discord Markdown Renderer
         function renderDiscordMarkdown(text) {
             if (!text) return '';
-            
+
             // Escape HTML first
             text = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-            
+
+            // Newlines
+            text = text.replace(/\n/g, '<br>');
+
             // Headers (###, ##, #)
             text = text.replace(/^### (.+)$/gm, '<h3 class="text-base font-bold mt-2">$1</h3>');
             text = text.replace(/^## (.+)$/gm, '<h2 class="text-lg font-bold mt-2">$1</h2>');
             text = text.replace(/^# (.+)$/gm, '<h1 class="text-xl font-bold mt-2">$1</h1>');
-            
+
             // Bold (**text** or __text__)
             text = text.replace(/\*\*(.+?)\*\*/g, '<strong class="font-bold">$1</strong>');
             text = text.replace(/__(.+?)__/g, '<strong class="font-bold">$1</strong>');
-            
+
             // Italic (*text* or _text_)
             text = text.replace(/\*(.+?)\*/g, '<em class="italic">$1</em>');
             text = text.replace(/_(.+?)_/g, '<em class="italic">$1</em>');
-            
+
             // Strikethrough (~~text~~)
             text = text.replace(/~~(.+?)~~/g, '<s class="line-through">$1</s>');
-            
+
             // Underline (__text__)
             text = text.replace(/__(.+?)__/g, '<u class="underline">$1</u>');
-            
+
             // Code blocks (```code```)
             text = text.replace(/```([\s\S]+?)```/g, '<pre class="bg-gray-950 p-2 rounded text-sm my-1 overflow-x-auto"><code>$1</code></pre>');
-            
+
             // Inline code (`code`)
             text = text.replace(/`(.+?)`/g, '<code class="bg-gray-950 px-1 rounded text-sm">$1</code>');
-            
+
             // Blockquote (> text)
             text = text.replace(/^&gt; (.+)$/gm, '<div class="border-l-4 border-gray-600 pl-2 my-1 text-gray-400">$1</div>');
-            
+
             // Links [text](url)
             text = text.replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2" class="text-blue-400 hover:underline" target="_blank">$1</a>');
-            
+
             return text;
         }
-        
+
         function toggleSenderType() {
             const senderType = document.querySelector('input[name="sender-type"]:checked').value;
             const webhookOptions = document.getElementById('webhook-options');
-            
+
             if (senderType === 'webhook') {
                 webhookOptions.classList.remove('hidden');
             } else {
                 webhookOptions.classList.add('hidden');
             }
-            
+
             updateEmbedPreview();
         }
-        
+
         function setupEmbedBuilder() {
             // Add event listeners for live preview
             const embedInputs = [
@@ -1694,7 +1797,7 @@
                 'embed-thumbnail', 'embed-image', 'embed-footer-text', 'embed-footer-icon',
                 'embed-timestamp', 'webhook-username', 'webhook-avatar'
             ];
-            
+
             embedInputs.forEach(id => {
                 const element = document.getElementById(id);
                 if (element) {
@@ -1704,13 +1807,13 @@
                     }
                 }
             });
-            
+
             // Sync color picker and hex input
             document.getElementById('embed-color').addEventListener('input', (e) => {
                 document.getElementById('embed-color-hex').value = e.target.value;
                 updateEmbedPreview();
             });
-            
+
             document.getElementById('embed-color-hex').addEventListener('input', (e) => {
                 if (/^#[0-9A-F]{6}$/i.test(e.target.value)) {
                     document.getElementById('embed-color').value = e.target.value;
@@ -1718,35 +1821,35 @@
                 }
             });
         }
-        
+
         async function loadGuildChannels(guildId) {
             try {
                 const response = await fetch(`/api/channels/${guildId}`);
                 const data = await response.json();
                 guildChannels = data.channels || [];
-                
+
                 const channelOptions = '<option value="">Select a channel...</option>' +
                     guildChannels.map(ch => `<option value="${ch.id}">#${ch.name}</option>`).join('');
-                
+
                 // Populate embed builder channel dropdown
                 const embedSelect = document.getElementById('embed-channel');
                 if (embedSelect) embedSelect.innerHTML = channelOptions;
-                
+
                 // Populate welcome/leave channel dropdowns
                 const welcomeSelect = document.getElementById('welcome-channel');
                 if (welcomeSelect) welcomeSelect.innerHTML = channelOptions;
-                
+
                 const leaveSelect = document.getElementById('leave-channel');
                 if (leaveSelect) leaveSelect.innerHTML = channelOptions;
             } catch (error) {
                 console.error('Failed to load channels:', error);
             }
         }
-        
+
         function addEmbedField() {
             const fieldId = Date.now();
             const container = document.getElementById('embed-fields-container');
-            
+
             const fieldHtml = `
                 <div class="card bg-gray-800 p-3" data-field-id="${fieldId}">
                     <div class="space-y-2">
@@ -1764,19 +1867,19 @@
                     </div>
                 </div>
             `;
-            
+
             container.insertAdjacentHTML('beforeend', fieldHtml);
-            
+
             // Add listeners
             const fieldElement = container.querySelector(`[data-field-id="${fieldId}"]`);
             fieldElement.querySelectorAll('input').forEach(input => {
                 input.addEventListener('input', updateEmbedPreview);
                 input.addEventListener('change', updateEmbedPreview);
             });
-            
+
             updateEmbedPreview();
         }
-        
+
         function removeEmbedField(fieldId) {
             const field = document.querySelector(`[data-field-id="${fieldId}"]`);
             if (field) {
@@ -1784,27 +1887,27 @@
                 updateEmbedPreview();
             }
         }
-        
+
         function updateEmbedPreview() {
             const preview = document.getElementById('embed-preview');
             const color = document.getElementById('embed-color').value;
-            
+
             // Build preview HTML
             let html = '';
-            
+
             // Check sender type and add bot/webhook info
             const senderType = document.querySelector('input[name="sender-type"]:checked').value;
             if (senderType === 'webhook') {
                 const webhookUsername = document.getElementById('webhook-username').value || 'Webhook';
                 const webhookAvatar = document.getElementById('webhook-avatar').value || 'https://cdn.discordapp.com/embed/avatars/0.png';
-                
+
                 html += `<div class="flex items-center gap-2 mb-3 pb-2 border-b border-gray-700">`;
                 html += `<img src="${webhookAvatar}" class="w-10 h-10 rounded-full" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'" />`;
                 html += `<span class="font-semibold">${webhookUsername}</span>`;
                 html += `<span class="text-xs text-gray-500">BOT</span>`;
                 html += `</div>`;
             }
-            
+
             // Author
             const authorName = document.getElementById('embed-author-name').value;
             const authorIcon = document.getElementById('embed-author-icon').value;
@@ -1813,7 +1916,7 @@
                 if (authorIcon) html += `<img src="${authorIcon}" class="w-6 h-6 rounded-full" onerror="this.style.display='none'" />`;
                 html += `<span class="text-sm font-semibold">${authorName}</span></div>`;
             }
-            
+
             // Title
             const title = document.getElementById('embed-title').value;
             const url = document.getElementById('embed-url').value;
@@ -1825,14 +1928,14 @@
                     html += `<div class="text-xl font-bold mb-2">${renderedTitle}</div>`;
                 }
             }
-            
+
             // Description with markdown rendering
             const description = document.getElementById('embed-description').value;
             if (description) {
                 const renderedDesc = renderDiscordMarkdown(description);
                 html += `<div class="text-sm text-gray-300 mb-3">${renderedDesc}</div>`;
             }
-            
+
             // Fields
             const fieldElements = document.querySelectorAll('#embed-fields-container > div');
             if (fieldElements.length > 0) {
@@ -1841,7 +1944,7 @@
                     const name = fieldEl.querySelector('.field-name').value;
                     const value = fieldEl.querySelector('.field-value').value;
                     const inline = fieldEl.querySelector('.field-inline').checked;
-                    
+
                     if (name || value) {
                         html += `<div class="${inline ? 'inline-block w-1/2' : 'block'}">`;
                         html += `<div class="text-sm font-semibold">${renderDiscordMarkdown(name || 'Field Name')}</div>`;
@@ -1851,19 +1954,19 @@
                 });
                 html += '</div>';
             }
-            
+
             // Image
             const image = document.getElementById('embed-image').value;
             if (image) {
                 html += `<img src="${image}" class="rounded max-w-full h-auto mb-2" onerror="this.style.display='none'" />`;
             }
-            
+
             // Thumbnail
             const thumbnail = document.getElementById('embed-thumbnail').value;
             if (thumbnail) {
                 html += `<img src="${thumbnail}" class="rounded w-20 h-20 object-cover float-right ml-2" onerror="this.style.display='none'" />`;
             }
-            
+
             // Footer
             const footerText = document.getElementById('embed-footer-text').value;
             const footerIcon = document.getElementById('embed-footer-icon').value;
@@ -1875,42 +1978,42 @@
                 if (timestamp) html += `<span class="ml-auto">${new Date().toLocaleString()}</span>`;
                 html += '</div>';
             }
-            
+
             if (!html) {
                 html = '<div class="text-gray-400 text-center py-8"><i class="fas fa-eye text-4xl mb-2 opacity-30"></i><p>Start building your embed to see preview</p></div>';
             }
-            
+
             preview.innerHTML = html;
             preview.style.borderLeftColor = color;
         }
-        
+
         async function sendEmbed() {
             if (!currentGuildId) {
                 showResult('embed-result', 'Please select a server first', 'error');
                 return;
             }
-            
+
             const channelId = document.getElementById('embed-channel').value;
             if (!channelId) {
                 showResult('embed-result', 'Please select a target channel', 'error');
                 return;
             }
-            
+
             // Build embed object
             const embed = {};
-            
+
             const title = document.getElementById('embed-title').value;
             if (title) embed.title = title;
-            
+
             const description = document.getElementById('embed-description').value;
             if (description) embed.description = description;
-            
+
             const color = document.getElementById('embed-color').value;
             if (color) embed.color = parseInt(color.replace('#', ''), 16);
-            
+
             const url = document.getElementById('embed-url').value;
             if (url) embed.url = url;
-            
+
             // Author
             const authorName = document.getElementById('embed-author-name').value;
             if (authorName) {
@@ -1920,17 +2023,17 @@
                 const authorUrl = document.getElementById('embed-author-url').value;
                 if (authorUrl) embed.author.url = authorUrl;
             }
-            
+
             // Thumbnail & Image
             const thumbnail = document.getElementById('embed-thumbnail').value;
             if (thumbnail) embed.thumbnail = { url: thumbnail };
-            
+
             const image = document.getElementById('embed-image').value;
             if (image) embed.image = { url: image };
-            
+
             const video = document.getElementById('embed-video').value;
             if (video) embed.video = { url: video };
-            
+
             // Footer
             const footerText = document.getElementById('embed-footer-text').value;
             if (footerText) {
@@ -1938,12 +2041,12 @@
                 const footerIcon = document.getElementById('embed-footer-icon').value;
                 if (footerIcon) embed.footer.icon_url = footerIcon;
             }
-            
+
             // Timestamp
             if (document.getElementById('embed-timestamp').checked) {
                 embed.timestamp = new Date().toISOString();
             }
-            
+
             // Fields
             const fieldElements = document.querySelectorAll('#embed-fields-container > div');
             if (fieldElements.length > 0) {
@@ -1960,7 +2063,7 @@
                     }
                 });
             }
-            
+
             // Webhook data
             const senderType = document.querySelector('input[name="sender-type"]:checked').value;
             const webhookData = {};
@@ -1971,14 +2074,14 @@
             } else {
                 webhookData.useWebhook = false;
             }
-            
+
             try {
                 const response = await fetch(`/api/embed/${currentGuildId}/send`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ channelId, embed, webhook: webhookData })
                 });
-                
+
                 const data = await response.json();
                 showResult('embed-result', data.message, data.success ? 'success' : 'error');
             } catch (error) {
@@ -1987,4 +2090,5 @@
         }
     </script>
 </body>
+
 </html>
