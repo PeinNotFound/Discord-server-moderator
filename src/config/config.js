@@ -1,21 +1,21 @@
 // Copy this file to config.js and fill in your values
 module.exports = {
     // Discord Bot Configuration
-    DISCORD_TOKEN: process.env.DISCORD_TOKEN || 'NTgzMDM4MjA5MTM1NDc2NzUw.Gxw_-p.hey1UUAYbSU7MyyYAIVB9L7PS1Z0h165X9ybDI',
-    CLIENT_ID: process.env.CLIENT_ID || '583038209135476750',
+    DISCORD_TOKEN: process.env.DISCORD_TOKEN || '',
+    CLIENT_ID: process.env.CLIENT_ID || '',
 
     // Permission Role IDs (comma-separated for multiple roles)
-    MODERATOR_ROLES: '1271140354854486232',
-    ADMIN_ROLES: '1271146430744100904',
-    VOICE_MODERATOR_ROLES: '123',
+    MODERATOR_ROLES: '',
+    ADMIN_ROLES: '',
+    VOICE_MODERATOR_ROLES: '',
 
     // Rank System Admin Roles (who can manage points and view all ranks)
-    RANK_ADMIN_ROLES: '1271146430744100904',
+    RANK_ADMIN_ROLES: '',
 
     // Moderation Role IDs
-    WARN_ROLE_ID: 'your_warn_role_id_here',
-    JAIL_ROLE_ID: 'your_jail_role_id_here',
-    MUTED_ROLE_ID: 'your_muted_role_id_here',
+    WARN_ROLE_ID: '',
+    JAIL_ROLE_ID: '',
+    MUTED_ROLE_ID: '',
 
     // Rank System Role IDs
     TRIAL_STAFF_ROLE_ID: 'your_staff_role_id_here',
