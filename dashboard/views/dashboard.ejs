@@ -834,6 +834,82 @@
                 <div id="verification-result" class="mt-4"></div>
             </div>
 
+
+            <!-- Rank System Section -->
+            <div id="section-ranks" class="section-content p-8 hidden">
+                <div class="mb-6">
+                    <h1 class="text-3xl font-bold mb-2">Rank System Config</h1>
+                    <p class="text-gray-400">Configure staff ranking system roles and channels</p>
+                </div>
+
+                <div class="card bg-gray-800 border border-gray-700 mb-6">
+                    <div class="card-body">
+                        <h3 class="card-title text-xl mb-4">
+                            <i class="fas fa-sitemap mr-2"></i> Role Hierarchy
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="form-control">
+                                <label class="label"><span class="label-text font-bold">Trial Staff Role
+                                        ID</span></label>
+                                <input type="text" id="config-trialStaffRoleId"
+                                    class="input input-bordered bg-gray-900" />
+                            </div>
+                            <div class="form-control">
+                                <label class="label"><span class="label-text font-bold">Staff Role ID</span></label>
+                                <input type="text" id="config-staffRoleId" class="input input-bordered bg-gray-900" />
+                            </div>
+                            <div class="form-control">
+                                <label class="label"><span class="label-text font-bold">Moderator Role ID</span></label>
+                                <input type="text" id="config-moderatorRoleId"
+                                    class="input input-bordered bg-gray-900" />
+                            </div>
+                            <div class="form-control">
+                                <label class="label"><span class="label-text font-bold">Head Moderator Role
+                                        ID</span></label>
+                                <input type="text" id="config-headModeratorRoleId"
+                                    class="input input-bordered bg-gray-900" />
+                            </div>
+                            <div class="form-control">
+                                <label class="label"><span class="label-text font-bold">Manager Role ID</span></label>
+                                <input type="text" id="config-managerRoleId" class="input input-bordered bg-gray-900" />
+                            </div>
+                            <div class="form-control">
+                                <label class="label"><span class="label-text font-bold">Head Manager Role
+                                        ID</span></label>
+                                <input type="text" id="config-headManagerRoleId"
+                                    class="input input-bordered bg-gray-900" />
+                            </div>
+                            <div class="form-control">
+                                <label class="label"><span class="label-text font-bold">Administrator Role
+                                        ID</span></label>
+                                <input type="text" id="config-administratorRoleId"
+                                    class="input input-bordered bg-gray-900" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card bg-gray-800 border border-gray-700 mb-6">
+                    <div class="card-body">
+                        <h3 class="card-title text-xl mb-4">
+                            <i class="fas fa-hashtag mr-2"></i> Logging
+                        </h3>
+                        <div class="form-control">
+                            <label class="label"><span class="label-text font-bold">Rank Logs Channel ID</span></label>
+                            <input type="text" id="config-rankLogChannelId" class="input input-bordered bg-gray-900" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-6">
+                    <button class="btn btn-primary" onclick="saveConfig('ranks')">
+                        <i class="fas fa-save mr-2"></i>
+                        Save Rank Settings
+                    </button>
+                </div>
+                <div id="ranks-result" class="mt-4"></div>
+            </div>
+
             <!-- Embed Builder Section -->
             <div id="section-embed-builder" class="section-content p-8 hidden">
                 <div class="mb-6">
@@ -1117,12 +1193,7 @@
                             <input type="checkbox" class="toggle toggle-primary" checked />
                         </label>
                     </div>
-                    <div class="form-control">
-                        <label class="label cursor-pointer">
-                            <span class="label-text">Rank System</span>
-                            <input type="checkbox" class="toggle toggle-primary" checked />
-                        </label>
-                    </div>
+
                 </div>
 
                 <div class="mt-6">
