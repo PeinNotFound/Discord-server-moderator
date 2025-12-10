@@ -192,8 +192,8 @@ module.exports = {
                 .addFields(
                     { name: '👤 User', value: `${member.user.tag}`, inline: true },
                     { name: '🆔 User ID', value: `${member.id}`, inline: true },
-                    { name: '📤 From Channel', value: oldState.channel.name, inline: false },
-                    { name: '📥 To Channel', value: newState.channel.name, inline: false },
+                    { name: '📤 From Channel', value: oldState.channel ? oldState.channel.name : 'Unknown Channel', inline: false },
+                    { name: '📥 To Channel', value: newState.channel ? newState.channel.name : 'Unknown Channel', inline: false },
                     { name: '👨‍💼 Performed By', value: moderator, inline: true },
                     { name: '⏰ Timestamp', value: `<t:${Math.floor(Date.now() / 1000)}:F>`, inline: true }
                 )
