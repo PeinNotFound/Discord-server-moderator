@@ -14,6 +14,9 @@ const fs = require('fs');
 const GuildConfigManager = require('../src/utils/guildConfigManager.js');
 const guildConfigManager = new GuildConfigManager();
 
+const DataManager = require('../src/utils/dataManager.js');
+const dataManager = new DataManager('moderation-data.json');
+
 // Load config
 let config;
 try {
@@ -96,7 +99,7 @@ passport.use(new DiscordStrategy({
 }, (accessToken, refreshToken, profile, done) => {
     // Filter guilds to only include those where the user has ADMINISTRATOR permission (0x8)
     if (profile.guilds) {
-        profile.guilds = profile.guilds.filter(guild => 
+        profile.guilds = profile.guilds.filter(guild =>
             (guild.permissions & 0x8) === 0x8 // Check for Administrator permission
         );
     }
@@ -110,7 +113,7 @@ function ensureAuthenticated(req, res, next) {
         req.user = req.user || { id: 'test-user', username: 'Test User', avatar: '', guilds: [] };
         return next();
     }
-    
+
     // Otherwise require authentication
     if (req.isAuthenticated()) return next();
     res.redirect('/login');
@@ -127,7 +130,7 @@ app.get('/', (req, res) => {
 
 app.get('/login', passport.authenticate('discord'));
 
-app.get('/callback', 
+app.get('/callback',
     passport.authenticate('discord', { failureRedirect: '/' }),
     (req, res) => {
         res.redirect('/dashboard');
@@ -142,14 +145,14 @@ app.get('/logout', (req, res) => {
 
 // Helper function to get all config keys
 function getAllConfigKeys() {
-    const mainConfigKeys = Object.keys(config).filter(key => 
+    const mainConfigKeys = Object.keys(config).filter(key =>
         !['DISCORD_TOKEN', 'CLIENT_ID'].includes(key) // Exclude sensitive keys
     );
-    
-    const verificationConfigKeys = Object.keys(verificationConfig).filter(key => 
+
+    const verificationConfigKeys = Object.keys(verificationConfig).filter(key =>
         key !== 'VERIFICATION_ROOMS' // We'll handle this separately
     );
-    
+
     return {
         main: mainConfigKeys,
         verification: verificationConfigKeys,
@@ -162,12 +165,12 @@ function updateConfigFile(filePath, newConfig) {
     try {
         // Read the existing file content
         let fileContent = fs.readFileSync(filePath, 'utf8');
-        
+
         // Update each config value in the file
         Object.keys(newConfig).forEach(key => {
             const value = newConfig[key];
             let formattedValue;
-            
+
             // Handle different value types
             if (typeof value === 'string') {
                 formattedValue = `'${value}'`;
@@ -178,13 +181,13 @@ function updateConfigFile(filePath, newConfig) {
             } else {
                 formattedValue = `'${value}'`; // Default to string
             }
-            
+
             // Create regex pattern to match the config line
             // Match: KEY: 'value' OR KEY: 'value1,value2' OR KEY: 'value1','value2'
             const regex = new RegExp(`(${key}:\\s*)('[^']*'(?:,\\s*'[^']*')*)`, 'g');
             fileContent = fileContent.replace(regex, `$1${formattedValue}`);
         });
-        
+
         // Write the updated content back to the file
         fs.writeFileSync(filePath, fileContent);
         return true;
@@ -196,13 +199,13 @@ function updateConfigFile(filePath, newConfig) {
 
 app.get('/dashboard', ensureAuthenticated, (req, res) => {
     // Load bot data
-    const DataManager = require('../src/utils/dataManager.js');
-    const dataManager = new DataManager('moderation-data.json');
+    // Load bot data handles
+    // DataManager is now loaded globally
     const data = dataManager.getAll();
-    
+
     // Get all config keys for the UI
     const configKeys = getAllConfigKeys();
-    
+
     // Load bot guilds from file
     let botGuilds = [];
     const botGuildsPath = path.join(__dirname, '..', 'guild-data', 'bot-guilds.json');
@@ -214,21 +217,21 @@ app.get('/dashboard', ensureAuthenticated, (req, res) => {
             console.error('Failed to load bot guilds:', error);
         }
     }
-    
+
     // Get bot guild IDs for filtering
     const botGuildIds = botGuilds.map(g => g.id);
-    
+
     // Filter guilds to only include those where:
     // 1. The user has administrative privileges
     // 2. The bot is present in the server
     let userGuilds = [];
     if (req.user.guilds) {
-        userGuilds = req.user.guilds.filter(guild => 
+        userGuilds = req.user.guilds.filter(guild =>
             (guild.permissions & 0x8) === 0x8 && // Check for Administrator permission
             botGuildIds.includes(guild.id) // Bot must be in the server
         );
     }
-    
+
     res.render('dashboard', {
         user: {
             ...req.user,
@@ -252,10 +255,10 @@ app.get('/dashboard', ensureAuthenticated, (req, res) => {
 // API Routes for live updates - Guild-specific stats
 app.get('/api/stats/:guildId', ensureAuthenticated, (req, res) => {
     const { guildId } = req.params;
-    
+
     // Load guild-specific data
     const data = guildConfigManager.loadGuildData(guildId, 'moderation-data.json');
-    
+
     res.json({
         warnedUsers: Object.keys(data.warnedUsers || {}).length,
         jailedUsers: Object.keys(data.jailedUsers || {}).length,
@@ -268,7 +271,7 @@ app.get('/api/stats', ensureAuthenticated, (req, res) => {
     const DataManager = require('../src/utils/dataManager.js');
     const dataManager = new DataManager('moderation-data.json');
     const data = dataManager.getAll();
-    
+
     res.json({
         warnedUsers: Object.keys(data.warnedUsers || {}).length,
         jailedUsers: Object.keys(data.jailedUsers || {}).length,
@@ -279,23 +282,23 @@ app.get('/api/stats', ensureAuthenticated, (req, res) => {
 app.get('/api/modactions', ensureAuthenticated, (req, res) => {
     const fs = require('fs');
     const path = require('path');
-    
+
     const logFile = path.join(__dirname, '..', 'src', 'logs', 'moderation-actions.json');
-    
+
     if (!fs.existsSync(logFile)) {
         return res.json({ actions: [] });
     }
-    
+
     try {
         const data = fs.readFileSync(logFile, 'utf8');
         const actions = JSON.parse(data);
-        
+
         // Sort by timestamp (newest first)
         actions.sort((a, b) => b.timestamp - a.timestamp);
-        
+
         // Limit to last 50 actions
         const limitedActions = actions.slice(0, 50);
-        
+
         res.json({ actions: limitedActions });
     } catch (error) {
         console.error('Failed to read mod actions:', error);
@@ -324,13 +327,13 @@ app.post('/api/moderate/ban', ensureAuthenticated, async (req, res) => {
 // API endpoint to get guild-specific configuration
 app.get('/api/config/:guildId', ensureAuthenticated, (req, res) => {
     const { guildId } = req.params;
-    
+
     // Load guild-specific config
     const guildConfig = guildConfigManager.loadGuildConfig(guildId);
-    
+
     // Load main config
     const mainConfig = config;
-    
+
     res.json({
         guildId: guildId,
         guildConfig: guildConfig,
@@ -346,15 +349,15 @@ app.get('/api/config/:guildId', ensureAuthenticated, (req, res) => {
 app.get('/api/commands', ensureAuthenticated, (req, res) => {
     const commandsPath = path.join(__dirname, '..', 'src', 'commands');
     const commandsList = [];
-    
+
     try {
         const folders = fs.readdirSync(commandsPath);
-        
+
         for (const folder of folders) {
             const folderPath = path.join(commandsPath, folder);
             if (fs.statSync(folderPath).isDirectory()) {
                 const files = fs.readdirSync(folderPath).filter(file => file.endsWith('.js'));
-                
+
                 for (const file of files) {
                     try {
                         const command = require(path.join(folderPath, file));
@@ -371,7 +374,7 @@ app.get('/api/commands', ensureAuthenticated, (req, res) => {
                 }
             }
         }
-        
+
         res.json({ commands: commandsList });
     } catch (error) {
         console.error('Failed to load commands:', error);
@@ -383,7 +386,7 @@ app.get('/api/commands', ensureAuthenticated, (req, res) => {
 app.get('/api/commands/:guildId', ensureAuthenticated, (req, res) => {
     const { guildId } = req.params;
     const guildConfig = guildConfigManager.loadGuildConfig(guildId);
-    
+
     res.json({
         disabledCommands: guildConfig.disabledCommands || [],
         commandAliases: guildConfig.commandAliases || {}
@@ -393,12 +396,12 @@ app.get('/api/commands/:guildId', ensureAuthenticated, (req, res) => {
 // API endpoint to get guild channels
 app.get('/api/channels/:guildId', ensureAuthenticated, async (req, res) => {
     const { guildId } = req.params;
-    
+
     try {
         // In production, you'd fetch channels from Discord API
         // For now, return empty array - will be populated when bot connects
         const channelsPath = path.join(__dirname, '..', 'guild-data', guildId, 'channels.json');
-        
+
         if (fs.existsSync(channelsPath)) {
             const data = fs.readFileSync(channelsPath, 'utf8');
             const channels = JSON.parse(data);
@@ -416,21 +419,21 @@ app.get('/api/channels/:guildId', ensureAuthenticated, async (req, res) => {
 app.post('/api/embed/:guildId/send', ensureAuthenticated, async (req, res) => {
     const { guildId } = req.params;
     const { channelId, embed, webhook } = req.body;
-    
+
     try {
         // Store the embed send request
         const embedRequestPath = path.join(__dirname, '..', 'guild-data', guildId, 'embed-requests.json');
         const guildPath = path.join(__dirname, '..', 'guild-data', guildId);
-        
+
         if (!fs.existsSync(guildPath)) {
             fs.mkdirSync(guildPath, { recursive: true });
         }
-        
+
         let requests = [];
         if (fs.existsSync(embedRequestPath)) {
             requests = JSON.parse(fs.readFileSync(embedRequestPath, 'utf8'));
         }
-        
+
         requests.push({
             channelId,
             embed,
@@ -438,12 +441,12 @@ app.post('/api/embed/:guildId/send', ensureAuthenticated, async (req, res) => {
             timestamp: Date.now(),
             status: 'pending'
         });
-        
+
         fs.writeFileSync(embedRequestPath, JSON.stringify(requests, null, 2));
-        
+
         // Emit event for bot to process
         io.emit('embedSendRequest', { guildId, channelId, embed, webhook });
-        
+
         res.json({ success: true, message: 'Embed message queued for sending. Check bot console for delivery status.' });
     } catch (error) {
         console.error('Failed to queue embed:', error);
@@ -455,22 +458,22 @@ app.post('/api/embed/:guildId/send', ensureAuthenticated, async (req, res) => {
 app.post('/api/commands/:guildId/update', ensureAuthenticated, (req, res) => {
     const { guildId } = req.params;
     const { disabledCommands, commandAliases } = req.body;
-    
+
     try {
         const guildConfig = guildConfigManager.loadGuildConfig(guildId);
-        
+
         if (disabledCommands !== undefined) {
             guildConfig.disabledCommands = disabledCommands;
         }
-        
+
         if (commandAliases !== undefined) {
             guildConfig.commandAliases = commandAliases;
         }
-        
+
         guildConfigManager.saveGuildConfig(guildId, guildConfig);
-        
-        res.json({ 
-            success: true, 
+
+        res.json({
+            success: true,
             message: 'Command settings updated successfully'
         });
     } catch (error) {
@@ -492,16 +495,16 @@ app.get('/api/config', ensureAuthenticated, (req, res) => {
 app.post('/api/config/:guildId/update', ensureAuthenticated, (req, res) => {
     const { guildId } = req.params;
     const { config: newConfig } = req.body;
-    
+
     try {
         // Update guild config
         const updatedConfig = guildConfigManager.updateGuildConfig(guildId, newConfig);
-        
+
         // Emit configuration update event via WebSocket
         io.emit('configUpdated', { guildId, config: updatedConfig });
-        
-        res.json({ 
-            success: true, 
+
+        res.json({
+            success: true,
             message: 'Guild configuration updated successfully',
             config: updatedConfig
         });
@@ -514,11 +517,11 @@ app.post('/api/config/:guildId/update', ensureAuthenticated, (req, res) => {
 // API endpoint to update configuration (legacy)
 app.post('/api/config/update', ensureAuthenticated, (req, res) => {
     const { type, config: newConfig } = req.body;
-    
+
     try {
         let configPath;
         let currentConfig;
-        
+
         // Determine which config file to update
         if (type === 'main') {
             configPath = path.join(__dirname, '..', 'src', 'config', 'config.js');
@@ -529,10 +532,10 @@ app.post('/api/config/update', ensureAuthenticated, (req, res) => {
         } else {
             return res.json({ success: false, message: 'Invalid config type' });
         }
-        
+
         // Update the config file
         const success = updateConfigFile(configPath, newConfig);
-        
+
         if (success) {
             // Update the in-memory config
             if (type === 'main') {
@@ -540,7 +543,7 @@ app.post('/api/config/update', ensureAuthenticated, (req, res) => {
             } else if (type === 'verification') {
                 Object.assign(verificationConfig, newConfig);
             }
-            
+
             res.json({ success: true, message: 'Config updated successfully' });
         } else {
             res.json({ success: false, message: 'Failed to update config file' });
@@ -554,23 +557,23 @@ app.post('/api/config/update', ensureAuthenticated, (req, res) => {
 // WebSocket for real-time updates
 io.on('connection', (socket) => {
     console.log('📱 Dashboard client connected');
-    
+
     socket.on('disconnect', () => {
         console.log('📱 Dashboard client disconnected');
     });
-    
+
     // Emit stats update every 5 seconds
     const statsInterval = setInterval(() => {
         const DataManager = require('../src/utils/dataManager.js');
         const dataManager = new DataManager('moderation-data.json');
         const data = dataManager.getAll();
-        
+
         socket.emit('statsUpdate', {
             warnedUsers: Object.keys(data.warnedUsers || {}).length,
             jailedUsers: Object.keys(data.jailedUsers || {}).length
         });
     }, 5000);
-    
+
     socket.on('disconnect', () => {
         clearInterval(statsInterval);
     });

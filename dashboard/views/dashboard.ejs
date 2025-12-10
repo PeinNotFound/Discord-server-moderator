@@ -242,6 +242,10 @@
                         <i class="fas fa-shield-alt"></i>
                         Clan System
                     </a></li>
+                <li><a onclick="showSection('ranks')">
+                        <i class="fas fa-trophy"></i>
+                        Rank System
+                    </a></li>
                 <li><a onclick="showSection('embed-builder')">
                         <i class="fas fa-envelope"></i>
                         Embed Builder
@@ -1077,46 +1081,7 @@
                 </div>
             </div>
 
-            <!-- Verification Config Section -->
-            <div id="section-verification-config" class="section-content p-8 hidden">
-                <div class="mb-6">
-                    <h1 class="text-3xl font-bold mb-2">Verification Configuration</h1>
-                    <p class="text-gray-400">Configure user verification settings</p>
-                </div>
 
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <% if (config.verification && config.keys.verification) { %>
-                        <% config.keys.verification.forEach(function(key) { %>
-                            <div class="form-control">
-                                <label class="label">
-                                    <span class="label-text font-medium">
-                                        <%= key %>
-                                    </span>
-                                </label>
-                                <input type="text" placeholder="<%= key %>" class="input input-bordered bg-gray-800"
-                                    id="vconfig-<%= key %>" value="<%= config.verification[key] %>" />
-                            </div>
-                            <% }); %>
-                                <% } else { %>
-                                    <div class="col-span-2">
-                                        <div class="alert alert-warning">
-                                            <i class="fas fa-exclamation-triangle"></i>
-                                            <span>Verification config not found. Create verification-config.js to enable
-                                                this feature.</span>
-                                        </div>
-                                    </div>
-                                    <% } %>
-                </div>
-
-                <div class="mt-6">
-                    <button class="btn btn-primary" onclick="saveConfig('verification')">
-                        <i class="fas fa-save mr-2"></i>
-                        Save Verification Config
-                    </button>
-                </div>
-
-                <div id="vconfig-result" class="mt-4"></div>
-            </div>
 
             <!-- Advanced Config Section -->
             <div id="section-advanced-config" class="section-content p-8 hidden">
@@ -1295,6 +1260,20 @@
             // Combine main config and guild config, prioritizing guild config values
             const combinedConfig = { ...mainConfig, ...guildConfig };
 
+            // Manually populate Rank System fields
+            const rankFields = [
+                'trialStaffRoleId', 'staffRoleId', 'moderatorRoleId', 'headModeratorRoleId',
+                'managerRoleId', 'headManagerRoleId', 'administratorRoleId', 'rankLogChannelId'
+            ];
+
+            rankFields.forEach(field => {
+                const element = document.getElementById(`config-${field}`);
+                if (element) {
+                    // Use combinedConfig to get value from either main or guild config
+                    element.value = combinedConfig[field] || '';
+                }
+            });
+
             // Filter out sensitive and clan fields
             // Filter out sensitive and clan fields
             const sensitiveKeys = ['DISCORD_TOKEN', 'CLIENT_ID'];
@@ -1317,6 +1296,16 @@
             const advancedKeys = ['TEMP_ROOMS_CATEGORY_ID', 'PREFIX'];
             const otherHandledKeys = ['DASHBOARD_URL', 'DASHBOARD_PORT'];
 
+            const verificationKeys = [
+                'verificationEnabled', 'unverifiedRoleId', 'verifiedRoleId', 'verifiedFemaleRoleId', 'verificatorRoleId',
+                'verificationCmdChannelId', 'verificationChatChannelId', 'verificationLogChannelId', 'verificationRooms'
+            ];
+
+            const rankKeys = [
+                'rankLogChannelId', 'trialStaffRoleId', 'staffRoleId', 'moderatorRoleId', 'headModeratorRoleId',
+                'managerRoleId', 'headManagerRoleId', 'administratorRoleId'
+            ];
+
             const excludedKeys = [
                 ...sensitiveKeys,
                 ...clanFieldKeys,
@@ -1324,10 +1313,17 @@
                 ...logChannelKeys,
                 ...roleKeys,
                 ...advancedKeys,
-                ...otherHandledKeys
+                ...otherHandledKeys,
+                ...verificationKeys,
+                ...rankKeys
             ];
 
-            const configFields = Object.keys(combinedConfig).filter(key => !excludedKeys.includes(key));
+            const configFields = Object.keys(combinedConfig).filter(key => {
+                if (excludedKeys.includes(key)) return false;
+                // strict check: exclude if value is an object (unless null)
+                if (typeof combinedConfig[key] === 'object' && combinedConfig[key] !== null) return false;
+                return true;
+            });
 
             const isArrayField = (key, value) => {
                 return Array.isArray(value) || key.toLowerCase().includes('role') && !key.toLowerCase().includes('id');
