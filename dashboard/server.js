@@ -459,6 +459,9 @@ app.post('/api/commands/:guildId/update', ensureAuthenticated, (req, res) => {
     const { guildId } = req.params;
     const { disabledCommands, commandAliases } = req.body;
 
+    console.log(`[DEBUG] Updating commands for guild ${guildId}`);
+    console.log(`[DEBUG] Received aliases payload:`, JSON.stringify(commandAliases, null, 2));
+
     try {
         const guildConfig = guildConfigManager.loadGuildConfig(guildId);
 

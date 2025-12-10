@@ -1486,7 +1486,17 @@
             if (event.key === 'Enter' && input.value.trim()) {
                 event.preventDefault();
                 const container = input.closest('.tag-input-container');
+
+                // Enforce Max 3 tags for aliases
                 const fieldKey = container.dataset.field;
+                if (fieldKey.startsWith('alias-')) {
+                    const currentTags = container.querySelectorAll('.tag-chip').length;
+                    if (currentTags >= 3) {
+                        alert('Maximum 3 aliases allowed');
+                        return;
+                    }
+                }
+
                 const value = input.value.trim();
 
                 // Create chip
@@ -1519,7 +1529,13 @@
         function updateTagsValue(container, fieldKey) {
             const chips = container.querySelectorAll('.tag-chip');
             const values = Array.from(chips).map(chip => chip.textContent.trim().replace('×', '').trim());
-            const hiddenInput = document.getElementById(`config-${fieldKey}`);
+
+            // Try to find input with exact ID first (for aliases), then fallback to config- prefix (for settings)
+            let hiddenInput = document.getElementById(fieldKey);
+            if (!hiddenInput) {
+                hiddenInput = document.getElementById(`config-${fieldKey}`);
+            }
+
             if (hiddenInput) {
                 hiddenInput.value = values.join(',');
             }
@@ -1940,14 +1956,19 @@
                 return;
             }
 
-            // Collect aliases from hidden inputs
-            const aliasInputs = document.querySelectorAll('[id^="alias-"]');
-            aliasInputs.forEach(input => {
-                const commandName = input.id.replace('alias-', '');
-                const aliasValue = input.value;
-                const aliases = aliasValue.split(',').map(a => a.trim()).filter(a => a);
-                guildCommandSettings.commandAliases[commandName] = aliases;
+            // Collect aliases from known commands (safer than querySelectorAll)
+            console.log('[DEBUG] Saving command settings...');
+
+            allCommands.forEach(cmd => {
+                const hiddenInput = document.getElementById(`alias-${cmd.name}`);
+                if (hiddenInput) {
+                    const aliasValue = hiddenInput.value;
+                    const aliases = aliasValue.split(',').map(a => a.trim()).filter(a => a);
+                    guildCommandSettings.commandAliases[cmd.name] = aliases;
+                }
             });
+
+            console.log('[DEBUG] Payload:', guildCommandSettings.commandAliases);
 
             try {
                 const response = await fetch(`/api/commands/${currentGuildId}/update`, {

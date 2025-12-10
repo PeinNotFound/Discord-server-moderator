@@ -55,6 +55,6 @@ module.exports = {
     RANK_LOG_CHANNEL_ID: 'your_rank_log_channel_id_here',
 
     // Dashboard Configuration
-    DASHBOARD_URL: process.env.DASHBOARD_URL || 'http://localhost:3000',
-    DASHBOARD_PORT: process.env.DASHBOARD_PORT || 3000
+    DASHBOARD_URL: process.env.DASHBOARD_URL || 'http://node1.masterdev.store:5027',
+    DASHBOARD_PORT: process.env.DASHBOARD_PORT || 5027
 };

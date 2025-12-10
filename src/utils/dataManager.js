@@ -13,15 +13,19 @@ class DataManager {
         this.lastSave = Date.now();
         this.pendingChanges = false;
 
-        // Save on exit
-        process.on('SIGINT', () => {
-            this.forceSave();
-            process.exit();
-        });
+        // Save on exit - Ensure listeners are added only once
+        if (!DataManager.listenersAttached) {
+            process.on('SIGINT', () => {
+                this.forceSave();
+                process.exit();
+            });
 
-        process.on('exit', () => {
-            this.forceSave();
-        });
+            process.on('exit', () => {
+                this.forceSave();
+            });
+
+            DataManager.listenersAttached = true;
+        }
     }
 
     load() {

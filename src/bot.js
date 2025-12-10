@@ -226,8 +226,16 @@ dashboardSocket.on('embedSendRequest', async (data) => {
 });
 
 dashboardSocket.on('configUpdated', (data) => {
-    const { guildId } = data;
-    client.reloadGuildConfig(guildId);
+    const { guildId, config } = data;
+    console.log(`🔄 Configuration updated for guild ${guildId}`);
+
+    // Update local cache if needed
+    if (client.config) {
+        // Map guild config keys back to bot config keys if they overlap
+        if (config.prefix) client.config.prefix = config.prefix;
+        if (config.moderatorRoles) client.config.moderatorRoles = config.moderatorRoles;
+        // Add other mappings as necessary
+    }
 });
 
 // Login to Discord

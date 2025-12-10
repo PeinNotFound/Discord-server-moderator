@@ -8,15 +8,15 @@ module.exports = {
     description: 'Mute a user in voice and text (1-30 minutes)',
     usage: '!mute @user [1-30]',
     permission: 'voice',
-    
+
     async execute(message, args, client) {
         if (!client.permissions.hasPermission(message.member, 'voice')) {
             return await safeReply(message, '❌ You don\'t have permission to use this command!');
         }
-        
+
         let target = message.mentions.members.first();
         const userId = args[0];
-        
+
         if (!target && userId) {
             try {
                 target = await message.guild.members.fetch(userId);
@@ -24,18 +24,21 @@ module.exports = {
                 return await safeReply(message, '❌ User not found in server!');
             }
         }
-        
+
         if (!target) return await safeReply(message, '❌ Please mention a user or provide a user ID to mute!');
-        
+
         const muteTime = args[1] ? parseInt(args[1]) : 10;
         if (isNaN(muteTime) || muteTime < 1 || muteTime > 30) {
             return await safeReply(message, '❌ Mute time must be between 1 and 30 minutes!');
         }
-        
+
         try {
             // Give muted role
-            if (client.config.MUTED_ROLE_ID && client.config.MUTED_ROLE_ID !== 'your_muted_role_id_here') {
-                const mutedRole = message.guild.roles.cache.get(client.config.MUTED_ROLE_ID);
+            const guildConfig = client.getGuildConfig(message.guild.id);
+            const mutedRoleId = guildConfig?.mutedRoleId || client.config.MUTED_ROLE_ID;
+
+            if (mutedRoleId && mutedRoleId !== 'your_muted_role_id_here') {
+                const mutedRole = message.guild.roles.cache.get(mutedRoleId);
                 if (mutedRole) {
                     await target.roles.add(mutedRole);
                 } else {
@@ -44,12 +47,12 @@ module.exports = {
             } else {
                 return await safeReply(message, '❌ Muted role is not configured! Please set MUTED_ROLE_ID in config.js');
             }
-            
+
             // Voice mute if in voice channel
             if (target.voice.channel) {
                 await target.voice.setMute(true);
             }
-            
+
             // Send DM
             try {
                 const muteEmbed = new EmbedBuilder()
@@ -62,14 +65,14 @@ module.exports = {
                         { name: '🔓 Unmute Time', value: `<t:${Math.floor((Date.now() + (muteTime * 60 * 1000)) / 1000)}:R>`, inline: true }
                     )
                     .setTimestamp();
-                
+
                 await target.send({ embeds: [muteEmbed] });
             } catch (dmError) {
                 console.log('Could not send DM');
             }
-            
+
             await client.logger.logAction(message.guild, 'MUTE', message.member, target, `Muted for ${muteTime} minute(s)`);
-            
+
             const successEmbed = new EmbedBuilder()
                 .setColor('#7f8c8d')
                 .setTitle('🔇 User Muted')
@@ -82,39 +85,41 @@ module.exports = {
                 )
                 .setThumbnail(target.user.displayAvatarURL())
                 .setTimestamp();
-            
+
             await safeReply(message, { embeds: [successEmbed] });
-            
+
             // Auto-unmute
             const unmuteTimeoutId = setTimeout(async () => {
                 try {
                     if (!autoUnmuteTimeouts.has(target.id)) return;
-                    
+
                     const member = await message.guild.members.fetch(target.id).catch(() => null);
                     if (!member) {
                         autoUnmuteTimeouts.delete(target.id);
                         return;
                     }
-                    
-                    const mutedRole = message.guild.roles.cache.get(client.config.MUTED_ROLE_ID);
+
+                    const guildConfig = client.getGuildConfig(message.guild.id);
+                    const mutedRoleId = guildConfig?.mutedRoleId || client.config.MUTED_ROLE_ID;
+                    const mutedRole = message.guild.roles.cache.get(mutedRoleId);
                     if (mutedRole && member.roles.cache.has(mutedRole.id)) {
                         await member.roles.remove(mutedRole);
                     }
-                    
+
                     if (member.voice.channel) {
                         await member.voice.setMute(false);
                     }
-                    
+
                     await client.logger.logAction(message.guild, 'UNMUTE', message.guild.members.me, member, `Mute expired after ${muteTime} minute(s)`);
-                    
+
                     autoUnmuteTimeouts.delete(target.id);
                 } catch (error) {
                     console.error('Auto-unmute failed:', error);
                 }
             }, muteTime * 60 * 1000);
-            
+
             autoUnmuteTimeouts.set(target.id, unmuteTimeoutId);
-            
+
         } catch (error) {
             if (error.code === 50013) {
                 await safeReply(message, '❌ I don\'t have permission to mute users!');
