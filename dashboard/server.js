@@ -232,6 +232,27 @@ app.get('/dashboard', ensureAuthenticated, (req, res) => {
         );
     }
 
+    // Process Premium Rooms Data for display
+    // We need to pass this safely to the view
+    const premiumRoomsData = [];
+    if (config.premiumRoleOwners) {
+        // This is global config - for guild specific we should look at guild config
+        // But the dashboard currently seems to focus on global config or mixes them?
+        // The dashboard view uses 'config' object passed below.
+
+        // Let's format the data for the view
+        for (const [roleId, data] of Object.entries(config.premiumRoleOwners)) {
+            const ownerId = typeof data === 'object' ? data.ownerId : data;
+            const roomId = typeof data === 'object' ? data.roomId : null;
+
+            premiumRoomsData.push({
+                roleId: roleId,
+                ownerId: ownerId,
+                roomId: roomId
+            });
+        }
+    }
+
     res.render('dashboard', {
         user: {
             ...req.user,
@@ -247,7 +268,8 @@ app.get('/dashboard', ensureAuthenticated, (req, res) => {
             adminRoles: config.ADMIN_ROLES || '',
             main: config,
             verification: verificationConfig,
-            keys: configKeys
+            keys: configKeys,
+            premiumRooms: premiumRoomsData
         }
     });
 });
