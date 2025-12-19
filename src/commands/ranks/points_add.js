@@ -17,10 +17,19 @@ module.exports = {
             }
 
             // Get target user
-            const targetMember = message.mentions.members.first();
+            let targetMember = message.mentions.members.first();
+
+            // Support finding by ID if not mentioned
+            if (!targetMember && args[0]) {
+                try {
+                    targetMember = await message.guild.members.fetch(args[0]);
+                } catch (err) {
+                    // Ignore error, will be handled by check below
+                }
+            }
 
             if (!targetMember) {
-                return await safeReply(message, '❌ Please mention a user to add points to!');
+                return await safeReply(message, '❌ Please mention a user or provide a valid User ID to add points to!');
             }
 
             // Get points amount

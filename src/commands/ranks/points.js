@@ -7,10 +7,31 @@ module.exports = {
     description: 'View your own rank and points',
     usage: '!points',
     permission: null,
-    
+
     async execute(message, args, client) {
-        const target = message.member;
-        
+        let target = message.member;
+
+        // Allow checking others if arg provided (and logic permits)
+        // But for "points" command it usually implies self. 
+        // However, if user explicitly asked "points id", let's support it if they have permission or just let it be open.
+        // The original code was strict about "View YOUR OWN rank".
+        // But `rank` command is for admins. `points` is for everyone? 
+        // `rank.js` permission is `rank_admin`. `points.js` permission is `null` (everyone).
+        // If I allow `points id`, regular users could check others' points. That's usually fine.
+
+        if (args[0]) {
+            const mentioned = message.mentions.members.first();
+            if (mentioned) {
+                target = mentioned;
+            } else {
+                try {
+                    target = await message.guild.members.fetch(args[0]);
+                } catch (e) { }
+            }
+        }
+
+        if (!target) target = message.member;
+
         // Check if user is staff member
         const staffRoleIds = [
             client.config.trialStaffRoleId,
@@ -21,9 +42,9 @@ module.exports = {
             client.config.headManagerRoleId,
             client.config.administratorRoleId
         ].filter(id => id && !id.includes('your_'));
-        
+
         const isStaff = target.roles.cache.some(role => staffRoleIds.includes(role.id));
-        
+
         if (!isStaff) {
             const embed = new EmbedBuilder()
                 .setColor('#ff6b6b')
@@ -36,14 +57,14 @@ module.exports = {
                 })
                 .setThumbnail(target.user.displayAvatarURL())
                 .setTimestamp();
-            
+
             return await safeReply(message, { embeds: [embed] });
         }
-        
+
         const userData = rankSystem.getUserData(target.id);
         const currentRank = rankSystem.getRankFromPoints(userData.points);
         const nextRank = rankSystem.getNextRank(currentRank.points);
-        
+
         const embed = new EmbedBuilder()
             .setColor(currentRank.color)
             .setTitle(`${currentRank.emoji} Points Overview`)
@@ -55,7 +76,7 @@ module.exports = {
             )
             .setThumbnail(target.user.displayAvatarURL())
             .setTimestamp();
-        
+
         if (nextRank) {
             const pointsNeeded = nextRank.points - userData.points;
             embed.addFields(
@@ -65,7 +86,7 @@ module.exports = {
         } else {
             embed.addFields({ name: '👑 Maximum Rank', value: 'You have reached the highest rank!', inline: false });
         }
-        
+
         await safeReply(message, { embeds: [embed] });
     }
 };

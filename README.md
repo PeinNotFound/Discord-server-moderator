@@ -426,6 +426,7 @@ If you need help:
 3. Use `!rank_help` for rank system guide
 4. Review this README
 5. Check the issues on GitHub
+6. Contact me on Discord: **peinnotfound**
 
 ---
 
