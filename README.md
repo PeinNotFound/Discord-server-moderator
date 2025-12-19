@@ -404,9 +404,17 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ---
 
-## 📝 License
-
 This project is licensed under the MIT License - see the LICENSE file for details.
+
+---
+
+## ☕ Support the Project
+
+If you find this bot helpful, please **leave a star ⭐️** and consider buying me a coffee to support development!
+
+<a href="https://paypal.me/Pex04n">
+  <img src="https://img.shields.io/badge/Donate-PayPal-blue.svg" alt="Donate with PayPal" />
+</a>
 
 ---
 

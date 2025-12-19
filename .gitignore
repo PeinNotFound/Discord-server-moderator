@@ -3,9 +3,12 @@ node_modules/
 package-lock.json
 
 # Configuration
-src/config.js
+src/config/config.js
+src/config/verification-config.js
 
 # Data Files
+guild-data/
+src/guild-data/
 src/moderation-data.json
 src/ranks-data.json
 
