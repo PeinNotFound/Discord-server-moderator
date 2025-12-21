@@ -482,17 +482,21 @@ async function createServerBackup(guild, guildConfigManager = null) {
 /**
  * Get backup statistics for a specific guild
  */
-function getBackupStats(guildId = null) {
+function getBackupStats(guildId = null, guildConfigManager = null) {
     try {
         let backupDir;
-        if (guildId) {
-            // Use guild-specific backup directory
-            const GuildConfigManager = require('../utils/guildConfigManager.js');
-            const guildConfigManager = new GuildConfigManager();
+        if (guildId && guildConfigManager) {
+            // Use guild-specific backup directory with provided manager
             backupDir = guildConfigManager.getGuildBackupPath(guildId);
             console.log(`[DEBUG] Looking for backups in: ${backupDir}`);
             console.log(`[DEBUG] Resolved absolute path: ${path.resolve(backupDir)}`);
             console.log(`[DEBUG] Current working directory: ${process.cwd()}`);
+        } else if (guildId) {
+            // Fallback: create new manager instance
+            const GuildConfigManager = require('../utils/guildConfigManager.js');
+            const tempManager = new GuildConfigManager();
+            backupDir = tempManager.getGuildBackupPath(guildId);
+            console.log(`[DEBUG] Using temp manager for backups in: ${backupDir}`);
         } else {
             // Fallback to old global backup directory
             backupDir = BACKUP_DIR;
@@ -538,9 +542,9 @@ function getBackupStats(guildId = null) {
 /**
  * List available backups for a specific guild
  */
-function listBackups(guildId = null) {
+function listBackups(guildId = null, guildConfigManager = null) {
     try {
-        const stats = getBackupStats(guildId);
+        const stats = getBackupStats(guildId, guildConfigManager);
         return stats.backups.map((backup, index) => {
             return `${index + 1}. **${backup.filename}**\n   Size: ${backup.size} KB | Created: ${backup.created.toLocaleString()}`;
         });
