@@ -462,14 +462,7 @@ async function createServerBackup(guild, guildConfigManager = null) {
         const filename = `backup_${sanitizedName}_${timestamp}.json`;
         const filepath = path.join(backupDir, filename);
 
-        console.log(`[DEBUG BACKUP] Creating backup at: ${filepath}`);
-        console.log(`[DEBUG BACKUP] Backup directory: ${backupDir}`);
-        console.log(`[DEBUG BACKUP] Filename: ${filename}`);
-
         fs.writeFileSync(filepath, JSON.stringify(backupData, null, 2));
-
-        console.log(`[DEBUG BACKUP] Backup created successfully`);
-        console.log(`[DEBUG BACKUP] Verifying file exists:`, fs.existsSync(filepath));
 
         return { success: true, filename, filepath };
 
@@ -488,39 +481,28 @@ function getBackupStats(guildId = null, guildConfigManager = null) {
         if (guildId && guildConfigManager) {
             // Use guild-specific backup directory with provided manager
             backupDir = guildConfigManager.getGuildBackupPath(guildId);
-            console.log(`[DEBUG] Looking for backups in: ${backupDir}`);
-            console.log(`[DEBUG] Resolved absolute path: ${path.resolve(backupDir)}`);
-            console.log(`[DEBUG] Current working directory: ${process.cwd()}`);
         } else if (guildId) {
             // Fallback: create new manager instance
             const GuildConfigManager = require('../utils/guildConfigManager.js');
             const tempManager = new GuildConfigManager();
             backupDir = tempManager.getGuildBackupPath(guildId);
-            console.log(`[DEBUG] Using temp manager for backups in: ${backupDir}`);
         } else {
             // Fallback to old global backup directory
             backupDir = BACKUP_DIR;
         }
 
         if (!fs.existsSync(backupDir)) {
-            console.log(`[DEBUG] Backup directory does not exist: ${backupDir}`);
             return { count: 0, backups: [] };
         }
-
-        console.log(`[DEBUG] Backup directory exists, attempting to read...`);
-        console.log(`[DEBUG] Directory stats:`, fs.statSync(backupDir));
 
         let files;
         try {
             files = fs.readdirSync(backupDir);
-            console.log(`[DEBUG] Files in backup directory (${files.length} total):`, files);
         } catch (readError) {
-            console.error(`[DEBUG] Error reading directory:`, readError);
             return { count: 0, backups: [] };
         }
 
         const backups = files.filter(f => f.startsWith('backup_') && f.endsWith('.json'));
-        console.log(`[DEBUG] Filtered backup files (${backups.length} found):`, backups);
 
         return {
             count: backups.length,
