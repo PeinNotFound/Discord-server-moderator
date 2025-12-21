@@ -8,15 +8,15 @@ const ANTI_RAID_CONFIG = {
     SPAM_MESSAGE_COUNT: 10, // Messages within time window
     SPAM_TIME_WINDOW: 5000, // 5 seconds
     SPAM_MUTE_DURATION: 1, // 1 minute
-    
+
     // Channel Deletion Protection
     CHANNEL_DELETE_COUNT: 3, // Deletions within time window
     CHANNEL_DELETE_TIME_WINDOW: 30000, // 30 seconds
-    
+
     // Role Deletion Protection
     ROLE_DELETE_COUNT: 3,
     ROLE_DELETE_TIME_WINDOW: 30000,
-    
+
     // Ban Wave Protection
     BAN_COUNT: 5,
     BAN_TIME_WINDOW: 60000 // 1 minute
@@ -29,7 +29,7 @@ const roleDeleteTracker = new Map(); // Map<userId, Array<timestamp>>
 const banTracker = new Map(); // Map<userId, Array<timestamp>>
 
 // Backup directory
-const BACKUP_DIR = path.join(__dirname, 'backups');
+const BACKUP_DIR = path.join(__dirname, '..', 'backups');
 
 // Ensure backup directory exists
 if (!fs.existsSync(BACKUP_DIR)) {
@@ -41,85 +41,85 @@ if (!fs.existsSync(BACKUP_DIR)) {
  */
 function initAntiRaid(client, botConfig) {
     console.log('🛡️ Anti-Raid Protection Initialized');
-    
+
     // Spam Detection
     client.on('messageCreate', async (message) => {
         if (!message.guild || message.author.bot) return;
-        
+
         // Skip if user has moderator role
-        if (message.member.roles.cache.some(role => 
-            botConfig.moderatorRoles.includes(role.id) || 
+        if (message.member.roles.cache.some(role =>
+            botConfig.moderatorRoles.includes(role.id) ||
             botConfig.adminRoles.includes(role.id)
         )) return;
-        
+
         const userId = message.author.id;
         const now = Date.now();
-        
+
         // Get or create message history for this user
         if (!messageTracker.has(userId)) {
             messageTracker.set(userId, []);
         }
-        
+
         const userMessages = messageTracker.get(userId);
-        
+
         // Add current message timestamp
         userMessages.push(now);
-        
+
         // Remove old messages outside time window
-        const filtered = userMessages.filter(timestamp => 
+        const filtered = userMessages.filter(timestamp =>
             now - timestamp < ANTI_RAID_CONFIG.SPAM_TIME_WINDOW
         );
         messageTracker.set(userId, filtered);
-        
+
         // Check if spam threshold exceeded
         if (filtered.length >= ANTI_RAID_CONFIG.SPAM_MESSAGE_COUNT) {
             await handleSpammer(message.member, message.guild, botConfig);
             messageTracker.delete(userId);
         }
     });
-    
+
     // Channel Deletion Protection
     client.on('channelDelete', async (channel) => {
         // Check if guild still exists
         if (!channel.guild || !client.guilds.cache.has(channel.guild.id)) return;
-        
+
         try {
             await new Promise(resolve => setTimeout(resolve, 1000));
-            
+
             // Double-check guild exists before fetching audit logs
             if (!channel.guild || !client.guilds.cache.has(channel.guild.id)) return;
-            
+
             const auditLogs = await channel.guild.fetchAuditLogs({
                 limit: 1,
                 type: 12 // CHANNEL_DELETE
             });
-            
+
             const deleteLog = auditLogs.entries.first();
             if (!deleteLog) return;
-            
+
             const { executor } = deleteLog;
             if (!executor || executor.bot) return;
-            
+
             // Skip if user is admin
             const member = await channel.guild.members.fetch(executor.id).catch(() => null);
             if (!member) return;
-            
+
             if (member.roles.cache.some(role => botConfig.adminRoles.includes(role.id))) return;
-            
+
             const now = Date.now();
-            
+
             if (!channelDeleteTracker.has(executor.id)) {
                 channelDeleteTracker.set(executor.id, []);
             }
-            
+
             const deletions = channelDeleteTracker.get(executor.id);
             deletions.push(now);
-            
-            const filtered = deletions.filter(timestamp => 
+
+            const filtered = deletions.filter(timestamp =>
                 now - timestamp < ANTI_RAID_CONFIG.CHANNEL_DELETE_TIME_WINDOW
             );
             channelDeleteTracker.set(executor.id, filtered);
-            
+
             if (filtered.length >= ANTI_RAID_CONFIG.CHANNEL_DELETE_COUNT) {
                 await handleRaider(member, channel.guild, 'mass channel deletion', botConfig);
                 channelDeleteTracker.delete(executor.id);
@@ -128,48 +128,48 @@ function initAntiRaid(client, botConfig) {
             console.error('Channel delete protection error:', error);
         }
     });
-    
+
     // Role Deletion Protection
     client.on('roleDelete', async (role) => {
         // Check if guild still exists
         if (!role.guild || !client.guilds.cache.has(role.guild.id)) return;
-        
+
         try {
             await new Promise(resolve => setTimeout(resolve, 1000));
-            
+
             // Double-check guild exists before fetching audit logs
             if (!role.guild || !client.guilds.cache.has(role.guild.id)) return;
-            
+
             const auditLogs = await role.guild.fetchAuditLogs({
                 limit: 1,
                 type: 32 // ROLE_DELETE
             });
-            
+
             const deleteLog = auditLogs.entries.first();
             if (!deleteLog) return;
-            
+
             const { executor } = deleteLog;
             if (!executor || executor.bot) return;
-            
+
             const member = await role.guild.members.fetch(executor.id).catch(() => null);
             if (!member) return;
-            
+
             if (member.roles.cache.some(r => botConfig.adminRoles.includes(r.id))) return;
-            
+
             const now = Date.now();
-            
+
             if (!roleDeleteTracker.has(executor.id)) {
                 roleDeleteTracker.set(executor.id, []);
             }
-            
+
             const deletions = roleDeleteTracker.get(executor.id);
             deletions.push(now);
-            
-            const filtered = deletions.filter(timestamp => 
+
+            const filtered = deletions.filter(timestamp =>
                 now - timestamp < ANTI_RAID_CONFIG.ROLE_DELETE_TIME_WINDOW
             );
             roleDeleteTracker.set(executor.id, filtered);
-            
+
             if (filtered.length >= ANTI_RAID_CONFIG.ROLE_DELETE_COUNT) {
                 await handleRaider(member, role.guild, 'mass role deletion', botConfig);
                 roleDeleteTracker.delete(executor.id);
@@ -178,48 +178,48 @@ function initAntiRaid(client, botConfig) {
             console.error('Role delete protection error:', error);
         }
     });
-    
+
     // Ban Wave Protection
     client.on('guildBanAdd', async (ban) => {
         // Check if guild still exists
         if (!ban.guild || !client.guilds.cache.has(ban.guild.id)) return;
-        
+
         try {
             await new Promise(resolve => setTimeout(resolve, 1000));
-            
+
             // Double-check guild exists before fetching audit logs
             if (!ban.guild || !client.guilds.cache.has(ban.guild.id)) return;
-            
+
             const auditLogs = await ban.guild.fetchAuditLogs({
                 limit: 1,
                 type: 22 // MEMBER_BAN_ADD
             });
-            
+
             const banLog = auditLogs.entries.first();
             if (!banLog) return;
-            
+
             const { executor } = banLog;
             if (!executor || executor.bot) return;
-            
+
             const member = await ban.guild.members.fetch(executor.id).catch(() => null);
             if (!member) return;
-            
+
             if (member.roles.cache.some(role => botConfig.adminRoles.includes(role.id))) return;
-            
+
             const now = Date.now();
-            
+
             if (!banTracker.has(executor.id)) {
                 banTracker.set(executor.id, []);
             }
-            
+
             const bans = banTracker.get(executor.id);
             bans.push(now);
-            
-            const filtered = bans.filter(timestamp => 
+
+            const filtered = bans.filter(timestamp =>
                 now - timestamp < ANTI_RAID_CONFIG.BAN_TIME_WINDOW
             );
             banTracker.set(executor.id, filtered);
-            
+
             if (filtered.length >= ANTI_RAID_CONFIG.BAN_COUNT) {
                 await handleRaider(member, ban.guild, 'mass banning', botConfig);
                 banTracker.delete(executor.id);
@@ -236,13 +236,13 @@ function initAntiRaid(client, botConfig) {
 async function handleSpammer(member, guild, botConfig) {
     try {
         console.log(`🚨 SPAM DETECTED: ${member.user.tag}`);
-        
+
         // Mute for 1 minute
         if (botConfig.mutedRoleId && botConfig.mutedRoleId !== 'your_muted_role_id_here') {
             const mutedRole = guild.roles.cache.get(botConfig.mutedRoleId);
             if (mutedRole) {
                 await member.roles.add(mutedRole);
-                
+
                 // Auto-unmute after 1 minute
                 setTimeout(async () => {
                     try {
@@ -255,7 +255,7 @@ async function handleSpammer(member, guild, botConfig) {
                 }, ANTI_RAID_CONFIG.SPAM_MUTE_DURATION * 60 * 1000);
             }
         }
-        
+
         // Send log to mute channel
         if (botConfig.muteLogChannelId) {
             const logChannel = guild.channels.cache.get(botConfig.muteLogChannelId);
@@ -270,11 +270,11 @@ async function handleSpammer(member, guild, botConfig) {
                         { name: '📋 Reason', value: 'Spam Detection: Too many messages in short time', inline: false }
                     )
                     .setTimestamp();
-                
+
                 await logChannel.send({ embeds: [embed] });
             }
         }
-        
+
         // Try to DM the user
         try {
             const dmEmbed = new EmbedBuilder()
@@ -285,12 +285,12 @@ async function handleSpammer(member, guild, botConfig) {
                     { name: '📝 Reason', value: 'Sending too many messages too quickly', inline: false }
                 )
                 .setTimestamp();
-            
+
             await member.send({ embeds: [dmEmbed] });
         } catch (error) {
             // Can't send DM
         }
-        
+
     } catch (error) {
         console.error('Spam handler error:', error);
     }
@@ -302,7 +302,7 @@ async function handleSpammer(member, guild, botConfig) {
 async function handleRaider(member, guild, reason, botConfig) {
     try {
         console.log(`🚨 RAID DETECTED: ${member.user.tag} - ${reason}`);
-        
+
         // Jail the user
         if (botConfig.jailRoleId && botConfig.jailRoleId !== 'your_jail_role_id_here') {
             const jailRole = guild.roles.cache.get(botConfig.jailRoleId);
@@ -311,10 +311,10 @@ async function handleRaider(member, guild, reason, botConfig) {
                 const currentRoles = member.roles.cache
                     .filter(role => role.id !== guild.id && role.id !== jailRole.id)
                     .map(role => role.id);
-                
+
                 // Remove all roles and add jail role
                 await member.roles.set([jailRole.id]);
-                
+
                 // Disconnect from voice if connected
                 if (member.voice.channel) {
                     try {
@@ -325,7 +325,7 @@ async function handleRaider(member, guild, reason, botConfig) {
                 }
             }
         }
-        
+
         // Send log to jail channel
         if (botConfig.jailLogChannelId) {
             const logChannel = guild.channels.cache.get(botConfig.jailLogChannelId);
@@ -341,11 +341,11 @@ async function handleRaider(member, guild, reason, botConfig) {
                     )
                     .setFooter({ text: 'Anti-Raid System' })
                     .setTimestamp();
-                
+
                 await logChannel.send({ embeds: [embed] });
             }
         }
-        
+
         // Try to DM the user
         try {
             const dmEmbed = new EmbedBuilder()
@@ -357,12 +357,12 @@ async function handleRaider(member, guild, reason, botConfig) {
                     { name: '⚠️ Note', value: 'Contact server administrators if you believe this is a mistake.', inline: false }
                 )
                 .setTimestamp();
-            
+
             await member.send({ embeds: [dmEmbed] });
         } catch (error) {
             // Can't send DM
         }
-        
+
     } catch (error) {
         console.error('Raider handler error:', error);
     }
@@ -393,7 +393,7 @@ async function createServerBackup(guild, guildConfigManager = null) {
                 explicitContentFilter: guild.explicitContentFilter
             }
         };
-        
+
         // Backup channels
         guild.channels.cache.forEach(channel => {
             const channelData = {
@@ -403,21 +403,21 @@ async function createServerBackup(guild, guildConfigManager = null) {
                 position: channel.position,
                 parentId: channel.parentId
             };
-            
+
             if (channel.isTextBased()) {
                 channelData.topic = channel.topic;
                 channelData.nsfw = channel.nsfw;
                 channelData.rateLimitPerUser = channel.rateLimitPerUser;
             }
-            
+
             if (channel.type === ChannelType.GuildVoice) {
                 channelData.bitrate = channel.bitrate;
                 channelData.userLimit = channel.userLimit;
             }
-            
+
             backupData.channels.push(channelData);
         });
-        
+
         // Backup roles
         guild.roles.cache.forEach(role => {
             if (role.id !== guild.id) { // Skip @everyone
@@ -432,7 +432,7 @@ async function createServerBackup(guild, guildConfigManager = null) {
                 });
             }
         });
-        
+
         // Backup emojis
         guild.emojis.cache.forEach(emoji => {
             backupData.emojis.push({
@@ -441,7 +441,7 @@ async function createServerBackup(guild, guildConfigManager = null) {
                 url: emoji.url
             });
         });
-        
+
         // Determine backup directory
         let backupDir;
         if (guildConfigManager) {
@@ -451,21 +451,21 @@ async function createServerBackup(guild, guildConfigManager = null) {
             // Fallback to old global backup directory
             backupDir = BACKUP_DIR;
         }
-        
+
         // Ensure backup directory exists
         if (!fs.existsSync(backupDir)) {
             fs.mkdirSync(backupDir, { recursive: true });
         }
-        
+
         // Sanitize guild name for filename (remove invalid characters for Windows)
         const sanitizedName = guild.name.replace(/[<>:"/\\|?*]/g, '_').replace(/\s+/g, '_');
         const filename = `backup_${sanitizedName}_${timestamp}.json`;
         const filepath = path.join(backupDir, filename);
-        
+
         fs.writeFileSync(filepath, JSON.stringify(backupData, null, 2));
-        
+
         return { success: true, filename, filepath };
-        
+
     } catch (error) {
         console.error('Backup creation error:', error);
         return { success: false, error: error.message };
@@ -487,14 +487,14 @@ function getBackupStats(guildId = null) {
             // Fallback to old global backup directory
             backupDir = BACKUP_DIR;
         }
-        
+
         if (!fs.existsSync(backupDir)) {
             return { count: 0, backups: [] };
         }
-        
+
         const files = fs.readdirSync(backupDir);
         const backups = files.filter(f => f.startsWith('backup_') && f.endsWith('.json'));
-        
+
         return {
             count: backups.length,
             backups: backups.map(filename => {
@@ -540,13 +540,13 @@ async function restoreFromBackup(guild, filename, guildConfigManager = null, opt
             // Fallback to old global backup directory
             backupDir = BACKUP_DIR;
         }
-        
+
         const filepath = path.join(backupDir, filename);
-        
+
         if (!fs.existsSync(filepath)) {
             return { success: false, error: 'Backup file not found!' };
         }
-        
+
         const backupData = JSON.parse(fs.readFileSync(filepath, 'utf8'));
         const results = {
             channelsCreated: 0,
@@ -554,12 +554,12 @@ async function restoreFromBackup(guild, filename, guildConfigManager = null, opt
             emojisRestored: 0,
             errors: []
         };
-        
+
         // Restore roles first (needed for channel permissions)
         if (options.restoreRoles !== false) {
             console.log('Restoring roles...');
             const sortedRoles = backupData.roles.sort((a, b) => a.position - b.position);
-            
+
             for (const roleData of sortedRoles) {
                 try {
                     // Check if role already exists
@@ -580,27 +580,27 @@ async function restoreFromBackup(guild, filename, guildConfigManager = null, opt
                 }
             }
         }
-        
+
         // Restore channels
         if (options.restoreChannels !== false) {
             console.log('Restoring channels...');
-            
+
             // First create categories
             const categories = backupData.channels.filter(c => c.type === 4); // Category type
             const sortedCategories = categories.sort((a, b) => a.position - b.position);
-            
+
             const categoryMap = new Map(); // Old ID -> New Channel
-            
+
             for (const catData of sortedCategories) {
                 try {
                     // First check if category with same ID still exists (same server restore)
                     let existingCat = guild.channels.cache.get(catData.id);
-                    
+
                     // If not found by ID, try to find by name and type
                     if (!existingCat || existingCat.type !== 4) {
                         existingCat = guild.channels.cache.find(c => c.name === catData.name && c.type === 4);
                     }
-                    
+
                     if (!existingCat) {
                         // Category doesn't exist, create it
                         const newCat = await guild.channels.create({
@@ -619,11 +619,11 @@ async function restoreFromBackup(guild, filename, guildConfigManager = null, opt
                     results.errors.push(`Category "${catData.name}": ${error.message}`);
                 }
             }
-            
+
             // Then create other channels
             const otherChannels = backupData.channels.filter(c => c.type !== 4);
             const sortedChannels = otherChannels.sort((a, b) => a.position - b.position);
-            
+
             for (const channelData of sortedChannels) {
                 try {
                     // Find the parent category first (for checking existing channels)
@@ -642,15 +642,15 @@ async function restoreFromBackup(guild, filename, guildConfigManager = null, opt
                             }
                         }
                     }
-                    
+
                     // Check if channel already exists (by name, type, and parent)
                     const expectedParentId = parentCategory ? parentCategory.id : null;
-                    const existingChannel = guild.channels.cache.find(c => 
-                        c.name === channelData.name && 
+                    const existingChannel = guild.channels.cache.find(c =>
+                        c.name === channelData.name &&
                         c.type === channelData.type &&
                         c.parentId === expectedParentId
                     );
-                    
+
                     if (!existingChannel) {
                         // Channel doesn't exist, create it
                         const channelOptions = {
@@ -659,11 +659,11 @@ async function restoreFromBackup(guild, filename, guildConfigManager = null, opt
                             position: channelData.position,
                             reason: 'Restored from backup'
                         };
-                        
+
                         if (parentCategory) {
                             channelOptions.parent = parentCategory;
                         }
-                        
+
                         if (channelData.type === ChannelType.GuildText) {
                             channelOptions.topic = channelData.topic || null;
                             channelOptions.nsfw = channelData.nsfw || false;
@@ -672,7 +672,7 @@ async function restoreFromBackup(guild, filename, guildConfigManager = null, opt
                             channelOptions.bitrate = channelData.bitrate || 64000;
                             channelOptions.userLimit = channelData.userLimit || 0;
                         }
-                        
+
                         await guild.channels.create(channelOptions);
                         results.channelsCreated++;
                     }
@@ -681,9 +681,9 @@ async function restoreFromBackup(guild, filename, guildConfigManager = null, opt
                 }
             }
         }
-        
+
         return { success: true, results };
-        
+
     } catch (error) {
         console.error('Restore error:', error);
         return { success: false, error: error.message };
