@@ -483,17 +483,21 @@ function getBackupStats(guildId = null) {
             const GuildConfigManager = require('../utils/guildConfigManager.js');
             const guildConfigManager = new GuildConfigManager();
             backupDir = guildConfigManager.getGuildBackupPath(guildId);
+            console.log(`[DEBUG] Looking for backups in: ${backupDir}`);
         } else {
             // Fallback to old global backup directory
             backupDir = BACKUP_DIR;
         }
 
         if (!fs.existsSync(backupDir)) {
+            console.log(`[DEBUG] Backup directory does not exist: ${backupDir}`);
             return { count: 0, backups: [] };
         }
 
         const files = fs.readdirSync(backupDir);
+        console.log(`[DEBUG] Files in backup directory:`, files);
         const backups = files.filter(f => f.startsWith('backup_') && f.endsWith('.json'));
+        console.log(`[DEBUG] Filtered backup files:`, backups);
 
         return {
             count: backups.length,
