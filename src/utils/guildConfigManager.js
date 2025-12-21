@@ -12,7 +12,7 @@ const path = require('path');
 
 class GuildConfigManager {
     constructor(baseDataPath = 'guild-data') {
-        this.baseDataPath = path.join(__dirname, '..', baseDataPath);
+        this.baseDataPath = path.join(__dirname, '..', '..', baseDataPath);
         this.ensureBaseDirectory();
     }
 
@@ -40,10 +40,10 @@ class GuildConfigManager {
         const guildPath = this.getGuildPath(guildId);
         if (!fs.existsSync(guildPath)) {
             fs.mkdirSync(guildPath, { recursive: true });
-            
+
             // Create subdirectories
             fs.mkdirSync(path.join(guildPath, 'backups'), { recursive: true });
-            
+
             console.log(`📁 Created directory for guild: ${guildId}`);
         }
         return guildPath;
@@ -59,12 +59,12 @@ class GuildConfigManager {
             adminRoles: [],
             voiceModeratorRoles: [],
             rankAdminRoles: [],
-            
+
             // Moderation Role IDs
             warnRoleId: null,
             jailRoleId: null,
             mutedRoleId: null,
-            
+
             // Rank System Role IDs
             trialStaffRoleId: null,
             staffRoleId: null,
@@ -73,11 +73,11 @@ class GuildConfigManager {
             managerRoleId: null,
             headManagerRoleId: null,
             administratorRoleId: null,
-            
+
             // Settings
             prefix: '!',
             botEnabled: true, // Bot active status for this guild
-            
+
             // Log Channel IDs
             jailLogChannelId: null,
             warnLogChannelId: null,
@@ -90,7 +90,7 @@ class GuildConfigManager {
             moveLogChannelId: null,
             memberLeaveLogChannelId: null,
             rankLogChannelId: null,
-            
+
             // Verification (if enabled)
             verificationEnabled: false,
             verifiedRoleId: null,
@@ -101,16 +101,16 @@ class GuildConfigManager {
             verificationChatChannelId: null,
             verificationLogChannelId: null,
             verificationRooms: [],
-            
+
             // Command Settings
             disabledCommands: [],
             commandAliases: {},
-                
+
             // Clan System
             clanSystemEnabled: false,
             clanTextCategoryId: '',
             clanVoiceCategoryId: '',
-            
+
             // Premium Role Management
             premiumRoleOwners: {} // Maps role IDs to owner user IDs
         };
@@ -122,7 +122,7 @@ class GuildConfigManager {
     loadGuildConfig(guildId) {
         const guildPath = this.ensureGuildDirectory(guildId);
         const configPath = path.join(guildPath, 'config.json');
-        
+
         try {
             if (fs.existsSync(configPath)) {
                 const data = fs.readFileSync(configPath, 'utf8');
@@ -131,7 +131,7 @@ class GuildConfigManager {
         } catch (error) {
             console.error(`Error loading config for guild ${guildId}:`, error);
         }
-        
+
         // Return default config if file doesn't exist
         const defaultConfig = this.getDefaultConfig();
         this.saveGuildConfig(guildId, defaultConfig);
@@ -144,7 +144,7 @@ class GuildConfigManager {
     saveGuildConfig(guildId, config) {
         const guildPath = this.ensureGuildDirectory(guildId);
         const configPath = path.join(guildPath, 'config.json');
-        
+
         try {
             fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
         } catch (error) {
@@ -168,7 +168,7 @@ class GuildConfigManager {
     loadGuildData(guildId, dataFile = 'moderation-data.json') {
         const guildPath = this.ensureGuildDirectory(guildId);
         const dataPath = path.join(guildPath, dataFile);
-        
+
         try {
             if (fs.existsSync(dataPath)) {
                 const data = fs.readFileSync(dataPath, 'utf8');
@@ -177,7 +177,7 @@ class GuildConfigManager {
         } catch (error) {
             console.error(`Error loading ${dataFile} for guild ${guildId}:`, error);
         }
-        
+
         // Return default data structure
         if (dataFile === 'moderation-data.json') {
             return { jailedUsers: {}, warnedUsers: {} };
@@ -193,7 +193,7 @@ class GuildConfigManager {
     saveGuildData(guildId, data, dataFile = 'moderation-data.json') {
         const guildPath = this.ensureGuildDirectory(guildId);
         const dataPath = path.join(guildPath, dataFile);
-        
+
         try {
             fs.writeFileSync(dataPath, JSON.stringify(data, null, 2));
         } catch (error) {
