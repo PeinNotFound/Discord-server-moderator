@@ -1,13 +1,122 @@
 const { EmbedBuilder } = require('discord.js');
 const { safeReply } = require('../../utils/logger.js');
 
-// Store auto-unjail timeouts (shared across all guilds)
-const autoUnjailTimeouts = new Map();
+// Periodic checker for jail expiry (runs every 5 minutes)
+let jailCheckInterval = null;
+
+// Function to check and release expired jails
+async function checkExpiredJails(client) {
+    try {
+        const data = client.dataManager.getAll();
+        if (!data.jailedUsers) return;
+
+        const now = Date.now();
+        const expiredUsers = Object.entries(data.jailedUsers).filter(([_, jailData]) => {
+            return jailData.jailTime <= now;
+        });
+
+        for (const [userId, jailData] of expiredUsers) {
+            try {
+                const guild = client.guilds.cache.get(jailData.guildId);
+                if (!guild) {
+                    delete data.jailedUsers[userId];
+                    continue;
+                }
+
+                const member = await guild.members.fetch(userId).catch(() => null);
+                if (!member) {
+                    delete data.jailedUsers[userId];
+                    continue;
+                }
+
+                // Get jail role
+                const guildConfig = client.getGuildConfig(guild.id);
+                const jailRoleId = guildConfig?.jailRoleId || client.config.JAIL_ROLE_ID;
+                let jailRole = null;
+
+                if (jailRoleId && jailRoleId !== 'your_jail_role_id_here') {
+                    jailRole = guild.roles.cache.get(jailRoleId);
+                } else {
+                    jailRole = guild.roles.cache.find(role => role.name === 'Jailed');
+                }
+
+                // Check if user still has jail role
+                if (!jailRole || !member.roles.cache.has(jailRole.id)) {
+                    delete data.jailedUsers[userId];
+                    continue;
+                }
+
+                // Restore original roles
+                if (jailData.originalRoles && jailData.originalRoles.length > 0) {
+                    const rolesToRestore = jailData.originalRoles
+                        .map(roleId => guild.roles.cache.get(roleId))
+                        .filter(role => role !== undefined);
+
+                    await member.roles.set(rolesToRestore);
+                } else {
+                    await member.roles.remove(jailRole);
+                }
+
+                // Send DM
+                try {
+                    const unjailEmbed = new EmbedBuilder()
+                        .setColor('#2ecc71')
+                        .setTitle('🔓 Jail Time Expired')
+                        .setDescription(`Your jail time has expired in **${guild.name}**`)
+                        .addFields(
+                            { name: '✅ Status', value: 'Your roles have been restored', inline: false },
+                            { name: '⏰ Released At', value: `<t:${Math.floor(Date.now() / 1000)}:F>`, inline: true }
+                        )
+                        .setTimestamp();
+
+                    await member.send({ embeds: [unjailEmbed] });
+                } catch (dmError) {
+                    console.log('Could not send DM to released user');
+                }
+
+                await client.logger.logAction(guild, 'UNJAIL', guild.members.me, member, 'Jail time expired (automatic release)');
+
+                // Try to send message to the channel where they were jailed
+                const logChannel = guild.channels.cache.find(ch => ch.name === 'mod-logs' || ch.name === 'logs');
+                if (logChannel) {
+                    logChannel.send(`🔓 <@${userId}> has been automatically released from jail!`).catch(() => { });
+                }
+
+                // Clean up
+                delete data.jailedUsers[userId];
+            } catch (error) {
+                console.error(`Failed to auto-release user ${userId}:`, error);
+            }
+        }
+
+        if (expiredUsers.length > 0) {
+            client.dataManager.save();
+        }
+    } catch (error) {
+        console.error('Error in jail check interval:', error);
+    }
+}
+
+// Initialize jail checker
+function initializeJailChecker(client) {
+    if (jailCheckInterval) {
+        clearInterval(jailCheckInterval);
+    }
+
+    // Check immediately on startup
+    checkExpiredJails(client);
+
+    // Then check every 5 minutes
+    jailCheckInterval = setInterval(() => {
+        checkExpiredJails(client);
+    }, 5 * 60 * 1000); // 5 minutes
+}
 
 module.exports = {
     name: 'jail',
     description: 'Temporarily jail a user (removes all roles)',
     usage: '!jail @user [time] [reason]\nTime formats: 10m (minutes), 2h (hours), 1d (days)',
+    initializeJailChecker,
     permission: 'moderation',
 
     async execute(message, args, client) {
@@ -152,67 +261,8 @@ module.exports = {
 
             await safeReply(message, { embeds: [successEmbed] });
 
-            // Auto-unjail after specified time
-            const unjailTimeoutId = setTimeout(async () => {
-                try {
-                    if (!autoUnjailTimeouts.has(target.id)) return;
-
-                    const member = message.guild.members.cache.get(target.id);
-                    if (!member) {
-                        autoUnjailTimeouts.delete(target.id);
-                        return;
-                    }
-
-                    if (!member.roles.cache.has(jailRole.id)) {
-                        autoUnjailTimeouts.delete(target.id);
-                        return;
-                    }
-
-                    const latestData = client.dataManager.getAll();
-                    const storedJailData = latestData.jailedUsers && latestData.jailedUsers[target.id];
-
-                    if (storedJailData && storedJailData.originalRoles.length > 0) {
-                        const rolesToRestore = storedJailData.originalRoles
-                            .map(roleId => message.guild.roles.cache.get(roleId))
-                            .filter(role => role !== undefined);
-
-                        await member.roles.set(rolesToRestore);
-                    } else {
-                        await member.roles.remove(jailRole);
-                    }
-
-                    // Clean up
-                    delete latestData.jailedUsers[target.id];
-                    client.dataManager.save();
-
-                    // Send DM
-                    try {
-                        const unjailEmbed = new EmbedBuilder()
-                            .setColor('#2ecc71')
-                            .setTitle('🔓 Jail Time Expired')
-                            .setDescription(`Your jail time has expired in **${message.guild.name}**`)
-                            .addFields(
-                                { name: '✅ Status', value: 'Your roles have been restored', inline: false },
-                                { name: '⏰ Released At', value: `<t:${Math.floor(Date.now() / 1000)}:F>`, inline: true }
-                            )
-                            .setTimestamp();
-
-                        await member.send({ embeds: [unjailEmbed] });
-                    } catch (dmError) {
-                        console.log('Could not send DM');
-                    }
-
-                    await client.logger.logAction(message.guild, 'UNJAIL', message.guild.members.me, member, 'Jail time expired (automatic release)');
-                    message.channel.send(`🔓 ${target.user.tag} has been automatically released from jail!`);
-
-                    autoUnjailTimeouts.delete(target.id);
-                } catch (error) {
-                    console.error('Failed to unjail user:', error);
-                    autoUnjailTimeouts.delete(target.id);
-                }
-            }, timeInMinutes * 60 * 1000);
-
-            autoUnjailTimeouts.set(target.id, unjailTimeoutId);
+            // Note: Auto-unjail is handled by the periodic checker (every 5 minutes)
+            // This avoids setTimeout's 24.8-day maximum limit
 
         } catch (error) {
             if (error.code === 50013) {

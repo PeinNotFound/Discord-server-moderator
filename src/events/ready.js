@@ -1,6 +1,7 @@
 const antiRaid = require('../modules/anti-raid.js');
 const verification = require('../modules/verification.js');
 const { initClanSystem } = require('../modules/clans.js');
+const { initializeJailChecker } = require('../commands/moderation/jail.js');
 const fs = require('fs');
 const path = require('path');
 
@@ -29,8 +30,8 @@ module.exports = {
         // Initialize Clan System
         initClanSystem(client, client.config);
 
-        // Restore Jail Timeouts
-        restoreJailTimeouts(client);
+        // Initialize Jail Checker (periodic check every 5 minutes)
+        initializeJailChecker(client);
 
         // Save bot guilds list for dashboard filtering
         saveBotGuilds(client.guilds.cache);
@@ -88,105 +89,5 @@ function saveGuildChannels(guild) {
         console.log(`💾 Saved ${channels.length} channels for guild: ${guild.name}`);
     } catch (error) {
         console.error(`Failed to save channels for guild ${guild.id}:`, error);
-    }
-}
-
-function restoreJailTimeouts(client) {
-    console.log('🔄 Restoring jail timeouts...');
-    const data = client.dataManager.getAll();
-    if (!data.jailedUsers) return;
-
-    let restoredCount = 0;
-    const now = Date.now();
-
-    Object.entries(data.jailedUsers).forEach(async ([userId, jailData]) => {
-        const guild = client.guilds.cache.get(jailData.guildId);
-        if (!guild) return;
-
-        const remainingTime = jailData.jailTime - now;
-
-        if (remainingTime <= 0) {
-            // Time expired while bot was offline - unjail immediately
-            console.log(`⏰ Jail time expired for user ${userId}, unjailing now...`);
-            await unjailUser(client, guild, userId);
-        } else {
-            // Set timeout for remaining time
-            console.log(`⏳ Restoring jail timer for ${userId}: ${Math.round(remainingTime / 1000 / 60)}m remaining`);
-
-            // Clear existing timeout if any
-            if (client.autoUnjailTimeouts.has(userId)) {
-                clearTimeout(client.autoUnjailTimeouts.get(userId));
-            }
-
-            const timeoutId = setTimeout(async () => {
-                await unjailUser(client, guild, userId);
-            }, remainingTime);
-
-            client.autoUnjailTimeouts.set(userId, timeoutId);
-            restoredCount++;
-        }
-    });
-
-    console.log(`✅ Restored ${restoredCount} jail timers`);
-}
-
-async function unjailUser(client, guild, userId) {
-    try {
-        const member = await guild.members.fetch(userId).catch(() => null);
-
-        // Get jail role
-        let jailRole;
-        if (client.config.jailRoleId && client.config.jailRoleId !== 'your_jail_role_id_here') {
-            jailRole = guild.roles.cache.get(client.config.jailRoleId);
-        } else {
-            jailRole = guild.roles.cache.find(role => role.name === 'Jailed');
-        }
-
-        if (!jailRole) {
-            console.error(`❌ Jail role not found for guild ${guild.name}`);
-            return;
-        }
-
-        // Remove from database first to prevent loop
-        const data = client.dataManager.getAll();
-        const jailData = data.jailedUsers[userId]; // Get data before deleting
-        delete data.jailedUsers[userId];
-        client.dataManager.save();
-        client.autoUnjailTimeouts.delete(userId);
-
-        if (!member) {
-            console.log(`⚠️ User ${userId} not found in guild, removed from jail DB only.`);
-            return;
-        }
-
-        // Remove jail role
-        if (member.roles.cache.has(jailRole.id)) {
-            await member.roles.remove(jailRole);
-        }
-
-        // Restore roles
-        if (jailData && jailData.originalRoles && jailData.originalRoles.length > 0) {
-            const rolesToRestore = [];
-            for (const roleId of jailData.originalRoles) {
-                const role = guild.roles.cache.get(roleId);
-                if (role && role.id !== guild.id) { // explicit safety check
-                    rolesToRestore.push(role);
-                }
-            }
-
-            if (rolesToRestore.length > 0) {
-                await member.roles.add(rolesToRestore);
-            }
-        }
-
-        // Log action (if logger available)
-        if (client.logger) {
-            await client.logger.logAction(guild, 'UNJAIL', client.user, member, 'Jail time expired (automatic release)');
-        }
-
-        console.log(`🔓 Automatically unjailed ${member.user.tag}`);
-
-    } catch (error) {
-        console.error(`Failed to auto-unjail user ${userId}:`, error);
     }
 }
