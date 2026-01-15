@@ -84,6 +84,32 @@ A comprehensive, feature-rich Discord moderation bot with advanced anti-raid pro
 
 ---
 
+## 💻 Web Dashboard
+
+Experience full control with our modern web dashboard.
+
+### Dashboard Overview
+![Overview](./dashboard/Dashboard-Screenshots/overview.png)
+
+### Command Management
+![Commands](./dashboard/Dashboard-Screenshots/commands.png)
+
+### Moderation Actions
+![Actions](./dashboard/Dashboard-Screenshots/actions.png)
+![Action History](./dashboard/Dashboard-Screenshots/history-actions.png)
+
+### Rank Management
+![Ranking](./dashboard/Dashboard-Screenshots/ranking.png)
+
+### Verification System
+![Verification](./dashboard/Dashboard-Screenshots/Verification.png)
+
+### Advanced Tools
+![Clan Management](./dashboard/Dashboard-Screenshots/Clan-managements.png)
+![Test Builder](./dashboard/Dashboard-Screenshots/TestBuilder.png)
+
+---
+
 ## 📋 Commands
 
 ### Moderation
@@ -439,7 +465,7 @@ This bot is provided as-is. Always test in a development server before deploying
 ## 🎯 Roadmap
 
 Future features being considered:
-- [ ] Web dashboard
+- [x] Web dashboard
 - [ ] Database support (MongoDB/PostgreSQL)
 - [ ] Advanced analytics
 - [ ] Custom command creation
